@@ -16,11 +16,12 @@ class HttpAutomock
 
     protected bool $registered = false;
 
-    protected bool $forceRenew = false;
+    /**
+     * @var bool|null Renew if null, renew always if true, renew never if false
+     */
+    protected ?bool $renew = null;
 
-    protected bool $disallowRenew = false;
-
-    protected bool $disableJsonPrettyPrint = false;
+    protected ?bool $jsonPrettyPrint = null;
 
     public int $count = 0;
 
@@ -51,14 +52,12 @@ class HttpAutomock
 
             $filePath = $this->resolveFilePath($request, false);
 
-            if (File::exists($filePath) && ! $this->forceRenew) {
+            if (File::exists($filePath) && $this->renew !== true) {
                 $content = File::get($filePath);
 
                 return Http::response($content);
-            } else {
-                if ($this->disallowRenew) {
-                    throw new RuntimeException('Tried to send a request that has renewing disallowed');
-                }
+            } elseif ($this->renew === false) {
+                throw new RuntimeException('Tried to send a request that has renewing disallowed');
             }
 
             return null;
@@ -74,10 +73,11 @@ class HttpAutomock
 
             $filePath = $this->resolveFilePath($event->request, true);
 
-            if (! File::exists($filePath) || $this->forceRenew) {
+            if (! File::exists($filePath) || $this->renew === true) {
                 $content = $event->response;
 
-                if (! $this->disableJsonPrettyPrint && str($content->header('content-type'))->startsWith('application/json')) {
+                $jsonPrettyPrint = $this->jsonPrettyPrint !== null ? $this->jsonPrettyPrint : config('http-automock.json_prettyprint');
+                if ($jsonPrettyPrint && str($content->header('content-type'))->startsWith('application/json')) {
                     $content = json_encode($content->json(), JSON_PRETTY_PRINT);
                 }
 
@@ -129,24 +129,19 @@ class HttpAutomock
         return false;
     }
 
-    public function forceRenew(bool $renew = true): static
+    /**
+     * @param  bool|null  $renew  Renew when file not exists if null, renew always if true, renew never if false
+     */
+    public function renew(?bool $renew = true): static
     {
-        $this->forceRenew = $renew;
+        $this->renew = $renew;
 
         return $this;
     }
 
-    public function disallowRenew(bool $disallow = true): static
+    public function jsonPrettyPrint(?bool $prettyPrint = true): static
     {
-        $this->disallowRenew = $disallow;
-
-        return $this;
-    }
-
-    // TODO Test
-    public function disableJsonPrettyPrint(bool $disable = true): static
-    {
-        $this->disableJsonPrettyPrint = $disable;
+        $this->jsonPrettyPrint = $prettyPrint;
 
         return $this;
     }

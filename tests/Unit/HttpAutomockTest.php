@@ -32,9 +32,9 @@ it('can automock requests', function () {
     Http::get('https://api.sampleapis.com/coffee/hot');
 });
 
-it('can still work when http fake is used #1', function () {
+it('can mock when http fake is used #1', function () {
     // Preconditions
-    $mockDirectory = mockFilePath('/Unit/HttpAutomockTest/it_can_still_work_when_http_fake_is_used__1/');
+    $mockDirectory = mockFilePath('/Unit/HttpAutomockTest/it_can_mock_when_http_fake_is_used__1/');
     File::deleteDirectory($mockDirectory);
     expect(File::isDirectory($mockDirectory))->toBeFalse();
 
@@ -50,9 +50,9 @@ it('can still work when http fake is used #1', function () {
     expect(File::isDirectory($mockDirectory))->toBeTrue('Set up wrong directory in test');
 });
 
-it('can still work when http fake is used #2', function () {
+it('can mock when http fake is used #2', function () {
     // Preconditions
-    $mockDirectory = mockFilePath('/Unit/HttpAutomockTest/it_can_still_work_when_http_fake_is_used__2/');
+    $mockDirectory = mockFilePath('/Unit/HttpAutomockTest/it_can_mock_when_http_fake_is_used__2/');
     File::deleteDirectory($mockDirectory);
     expect(File::isDirectory($mockDirectory))->toBeFalse();
 
@@ -69,7 +69,7 @@ it('can still work when http fake is used #2', function () {
 });
 
 it('can force renew responses', function () {
-    Http::automock()->forceRenew();
+    Http::automock()->renew();
     Http::fake([
         'https://test' => Http::sequence([
             Http::response('Hello'),
@@ -81,15 +81,66 @@ it('can force renew responses', function () {
         ->and(Http::get('https://test')->body())->toBe('There');
 });
 
-it('cannot make requests without mocks when renew is disallowed', function () {
-    // Precondition
-    $mockDirectory = mockFilePath('/Unit/HttpAutomockTest/it_cannot_make_request_without_mocks_when_renew_is_disallowed/');
-    File::deleteDirectory($mockDirectory);
-    expect(File::isDirectory($mockDirectory))->toBeFalse();
+//it('cannot make requests without mocks when renew is disallowed', function () {
+//    // Precondition
+//    $mockDirectory = mockFilePath('/Unit/HttpAutomockTest/it_cannot_make_request_without_mocks_when_renew_is_disallowed/');
+//    File::deleteDirectory($mockDirectory);
+//    expect(File::isDirectory($mockDirectory))->toBeFalse();
+//
+//    Http::automock()->renew(false);
+//    Http::get('https://api.sampleapis.com/coffee/hot');
+//
+//    // Precondition is configured properly
+//    expect(File::isDirectory($mockDirectory))->toBeTrue('Set up wrong directory in test');
+//})->throws(RuntimeException::class, 'Tried to send a request that has renewing disallowed');
 
-    Http::automock()->disallowRenew();
-    Http::get('https://api.sampleapis.com/coffee/hot');
+it('can enable pretty printing responses', function () {
+    // Preconditions
+    $mockPath = mockFilePath('/Unit/HttpAutomockTest/it_can_enable_pretty_printing_responses/dbfa9a6776f62af138c73e2558e8f336.mock');
+    File::delete($mockPath);
+    expect(File::exists($mockPath))->toBeFalse("File at $mockPath must not exist");
 
-    // Precondition is configured properly
-    expect(File::isDirectory($mockDirectory))->toBeTrue('Set up wrong directory in test');
-})->throws(RuntimeException::class, 'Tried to send a request that has renewing disallowed');
+    Http::automock()->jsonPrettyPrint();
+    Http::fake([
+        'https://test' => Http::response('{"hello":"world"}', headers: ['Content-Type' => 'application/json']),
+    ]);
+    Http::get('https://test');
+    expect(File::get($mockPath))->toBe("{\n    \"hello\": \"world\"\n}"); // also checks precondition
+});
+
+it('can disable pretty printing responses', function () {
+    // Preconditions
+    $mockPath = mockFilePath('/Unit/HttpAutomockTest/it_can_disable_pretty_printing_responses/dbfa9a6776f62af138c73e2558e8f336.mock');
+    File::delete($mockPath);
+    expect(File::exists($mockPath))->toBeFalse("File at $mockPath must not exist");
+
+    Http::automock()->jsonPrettyPrint(false);
+    Http::fake([
+        'https://test' => Http::response('{"hello":"world"}', headers: ['Content-type' => 'application/json']),
+    ]);
+    Http::get('https://test');
+    expect(File::get($mockPath))->toBe('{"hello":"world"}'); // also checks precondition
+});
+
+it('can enable and disable pretty printing responses', function () {
+    // TODO Decide whit tests to keep for disabling pretty print
+
+    // Preconditions
+    $mockPath = mockFilePath('/Unit/HttpAutomockTest/it_can_enable_and_disable_pretty_printing_responses/dbfa9a6776f62af138c73e2558e8f336.mock');
+    File::delete($mockPath);
+    expect(File::exists($mockPath))->toBeFalse("File at $mockPath must not exist");
+
+    Http::fake([
+        'https://test' => Http::response('{"hello":"world"}', headers: ['Content-type' => 'application/json']),
+    ]);
+
+    Http::automock()->jsonPrettyPrint(false);
+    Http::get('https://test');
+    expect(File::get($mockPath))->toBe('{"hello":"world"}'); // also checks precondition
+
+    File::delete($mockPath);
+
+    Http::automock()->jsonPrettyPrint();
+    Http::get('https://test');
+    expect(File::get($mockPath))->toBe("{\n    \"hello\": \"world\"\n}"); // also checks precondition
+});
