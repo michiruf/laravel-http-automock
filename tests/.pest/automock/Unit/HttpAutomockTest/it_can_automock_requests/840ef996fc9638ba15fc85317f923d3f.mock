@@ -1,0 +1,218 @@
+[
+    {
+        "title": "Latte",
+        "description": "Som den mest popul\u00e4ra kaffedrycken d\u00e4r ute best\u00e5r latte av en skv\u00e4tt espresso och \u00e5ngad mj\u00f6lk med bara en gnutta skum. Den kan best\u00e4llas utan smak eller med smak av allt fr\u00e5n vanilj till pumpa kryddor.",
+        "ingredients": [
+            "Espresso",
+            "\u00c5ngad mj\u00f6lk"
+        ],
+        "image": "https:\/\/images.unsplash.com\/photo-1561882468-9110e03e0f78?auto=format&fit=crop&q=60&w=800&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTl8fGxhdHRlfGVufDB8fDB8fHww",
+        "id": 2
+    },
+    {
+        "title": "Caramel Latte",
+        "description": "Om du gillar latte med en speciell smak kan karamell latte vara det b\u00e4sta alternativet f\u00f6r att ge dig en upplevelse av den naturliga s\u00f6tman och kr\u00e4migheten hos \u00e5ngad mj\u00f6lk och karamell.",
+        "ingredients": [
+            "Espresso",
+            "\u00c5ngad mj\u00f6lk",
+            "Karamellsirap"
+        ],
+        "image": "https:\/\/images.unsplash.com\/photo-1599398054066-846f28917f38?auto=format&fit=crop&q=80&w=1887&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "id": 3
+    },
+    {
+        "title": "Cappuccino",
+        "description": "Cappuccino \u00e4r en latte som \u00e4r gjord med mer skum \u00e4n \u00e5ngad mj\u00f6lk, ofta med ett str\u00f6 av kakaopulver eller kanel p\u00e5 toppen. Ibland kan du hitta variationer som anv\u00e4nder gr\u00e4dde ist\u00e4llet f\u00f6r mj\u00f6lk eller s\u00e5dana som tills\u00e4tter smak\u00e4mnen ocks\u00e5.",
+        "ingredients": [
+            "Espresso",
+            "\u00c5ngad mj\u00f6lk",
+            "Foam"
+        ],
+        "image": "https:\/\/images.unsplash.com\/photo-1557006021-b85faa2bc5e2?auto=format&fit=crop&q=80&w=1887&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "id": 4
+    },
+    {
+        "title": "Americano",
+        "description": "Med en liknande smak som svart kaffe best\u00e5r americano av en espresso skott utsp\u00e4tt med hett vatten.",
+        "ingredients": [
+            "Espresso",
+            "Hett vatten"
+        ],
+        "image": "https:\/\/images.unsplash.com\/photo-1532004491497-ba35c367d634?auto=format&fit=crop&q=80&w=1887&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "id": 5
+    },
+    {
+        "title": "Espresso",
+        "description": "Ett espressoskott kan serveras ensamt eller anv\u00e4ndas som grund f\u00f6r de flesta kaffedrycker, som latte och macchiato.",
+        "ingredients": [
+            "Espresso"
+        ],
+        "image": "https:\/\/images.unsplash.com\/photo-1579992357154-faf4bde95b3d?auto=format&fit=crop&q=80&w=1887&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "id": 6
+    },
+    {
+        "title": "Macchiato",
+        "description": "Macchiaton \u00e4r en annan espresso-baserad dryck som har en liten m\u00e4ngd skum p\u00e5 toppen. Det \u00e4r det glada mellanrummet mellan en cappuccino och en doppio.",
+        "ingredients": [
+            "Espresso",
+            "Foam"
+        ],
+        "image": "https:\/\/images.unsplash.com\/photo-1557772611-722dabe20327?auto=format&fit=crop&q=80&w=1887&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "id": 7
+    },
+    {
+        "title": "Mocha",
+        "description": "F\u00f6r alla choklad\u00e4lskare d\u00e4r ute kommer ni att bli f\u00f6r\u00e4lskade i en mocha. Mocha \u00e4r en choklad-espressodryck med \u00e5ngad mj\u00f6lk och skum.",
+        "ingredients": [
+            "Espresso",
+            "\u00c5ngad mj\u00f6lk",
+            "Choklad"
+        ],
+        "image": "https:\/\/images.unsplash.com\/photo-1607260550778-aa9d29444ce1?auto=format&fit=crop&q=80&w=1887&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "id": 8
+    },
+    {
+        "title": "Hot Chocolate",
+        "description": "Under kalla vinterdagar f\u00e5r en kopp varm choklad dig att k\u00e4nna dig bekv\u00e4m och lycklig. Den f\u00e5r dig ocks\u00e5 att m\u00e5 bra eftersom den inneh\u00e5ller energigivande koffein.",
+        "ingredients": [
+            "Choklad",
+            "Mj\u00f6lk"
+        ],
+        "image": "https:\/\/images.unsplash.com\/photo-1542990253-0d0f5be5f0ed?auto=format&fit=crop&q=60&w=800&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDh8fGhvdCUyMGNob2NvbGF0ZXxlbnwwfHwwfHx8MA%3D%3D",
+        "id": 9
+    },
+    {
+        "title": "Chai Latte",
+        "description": "Om du letar efter en smakfull varm dryck mitt i vintern, v\u00e4lj chai latte. Kombinationen av kardemumma och kanel ger en underbar smak.",
+        "ingredients": [
+            "Te",
+            "Mj\u00f6lk",
+            "Ingef\u00e4ra",
+            "Kardemumma",
+            "Kanel"
+        ],
+        "image": "https:\/\/images.unsplash.com\/photo-1578899952107-9c390f1af1b7?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGNoYWklMjBsYXR0ZXxlbnwwfHwwfHx8MA%3D%3D",
+        "id": 10
+    },
+    {
+        "title": "Matcha Latte",
+        "description": "Matcha latte \u00e4r en gr\u00f6n, h\u00e4lsosam kaffedryck med finkrossad matcha-te och mj\u00f6lk, erbjuder mild s\u00f6tma, en unik smak och en mild koffeinkick.",
+        "ingredients": [
+            "Matcha-pulver",
+            "Mj\u00f6lk",
+            "Socker*"
+        ],
+        "image": "https:\/\/images.unsplash.com\/photo-1536256263959-770b48d82b0a?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8bWF0Y2hhJTIwbGF0dGV8ZW58MHx8MHx8fDA%3D",
+        "id": 11
+    },
+    {
+        "title": "Seasonal Brew",
+        "description": "S\u00e4songs kaffe med olika smaktoner som karamell, frukt och choklad",
+        "ingredients": [
+            "Kaffe"
+        ],
+        "image": "https:\/\/images.unsplash.com\/photo-1611162458324-aae1eb4129a4?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTg1fHxibGFjayUyMGNvZmZlZXxlbnwwfHwwfHx8MA%3D%3D",
+        "id": 12
+    },
+    {
+        "title": "Svart Te",
+        "description": "Svart te f\u00f6ddes i Kina. Det \u00e4r tillverkat av blad fr\u00e5n en v\u00e4xt som kallas Camellia och kan smaks\u00e4ttas olika med frukter till exempel. En trevlig, varm, smakfull och aromatisk dryck som passar till vardagen.",
+        "ingredients": [
+            "Te"
+        ],
+        "image": "https:\/\/images.unsplash.com\/photo-1576092768241-dec231879fc3?auto=format&fit=crop&q=60&w=800&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjB8fHRlYXxlbnwwfHwwfHx8MA%3D%3D",
+        "id": 13
+    },
+    {
+        "title": "Islatte",
+        "description": "Iced latte \u00e4r en kyld kaffedryck som g\u00f6rs genom att blanda espresso och kyld mj\u00f6lk. Den serveras med isbitar och \u00e4r \u00e4ven k\u00e4nd som caf\u00e8 latte iced eller latte on the rocks.",
+        "ingredients": [
+            "Espresso",
+            "Mj\u00f6lk",
+            "Is",
+            "Sirap"
+        ],
+        "image": "https:\/\/images.unsplash.com\/photo-1517701550927-30cf4ba1dba5?auto=format&fit=crop&q=60&w=800&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8aWNlZCUyMGxhdHRlfGVufDB8fDB8fHww",
+        "id": 14
+    },
+    {
+        "title": "Islatte Mocha",
+        "description": "Iced latte Mocha \u00e4r en kombination av latte och mocha, som i sig \u00e4r en kombination av choklad och kaffe. Den ger kalla dryck\u00e4lskare en l\u00e4cker upplevelse av choklad och kaffe.",
+        "ingredients": [
+            "Espresso",
+            "Is",
+            "Mj\u00f6lk",
+            "Choklad "
+        ],
+        "image": "https:\/\/images.unsplash.com\/photo-1642647391072-6a2416f048e5?auto=format&fit=crop&q=60&w=800&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mzh8fGljZWQlMjBtb2NoYSUyMGxhdHRlfGVufDB8fDB8fHww",
+        "id": 15
+    },
+    {
+        "title": "Frapino Caramel",
+        "description": "Det \u00e4r en blandad eller b\u00e4ttre sagt skakad kaffe med vispad gr\u00e4dde p\u00e5 toppen. Ett m\u00e5ste f\u00f6r varma sommardagar.",
+        "ingredients": [
+            "coffee",
+            "Is",
+            "Mj\u00f6lk",
+            "Karamellsirap",
+            "Vispgr\u00e4dde*",
+            "Karamells\u00e5s"
+        ],
+        "image": "https:\/\/images.unsplash.com\/photo-1662047102608-a6f2e492411f?auto=format&fit=crop&q=60&w=800&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8ZnJhcGlubyUyMGNhcmFtZWx8ZW58MHx8MHx8fDA%3D",
+        "id": 16
+    },
+    {
+        "title": "Frapino Mocka",
+        "description": "\u00c4nnu en ber\u00f6md och uts\u00f6kt kall dryck f\u00f6r dem som f\u00f6redrar choklad. T\u00e4nk dig smaken av en shake med choklad och vispad gr\u00e4dde p\u00e5 toppen.",
+        "ingredients": [
+            "Coffee",
+            "Is",
+            "Mj\u00f6lk",
+            "Cocoa",
+            "Vispgr\u00e4dde*"
+        ],
+        "image": "https:\/\/images.unsplash.com\/photo-1530373239216-42518e6b4063?auto=format&fit=crop&q=60&w=800&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8ZnJhcGlubyUyMG1vY2hhfGVufDB8fDB8fHww",
+        "id": 17
+    },
+    {
+        "title": "Apelsinjuice",
+        "description": "Vi har inget att s\u00e4ga om v\u00e5r nypressade apelsinjuice. Du m\u00e5ste prova den sj\u00e4lv.",
+        "ingredients": [
+            "F\u00e4rska Apelsiner",
+            "Is"
+        ],
+        "image": "https:\/\/images.unsplash.com\/photo-1600271886742-f049cd451bba?auto=format&fit=crop&q=60&w=800&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NzF8fG9yYW5nZSUyMGp1aWNlfGVufDB8fDB8fHww",
+        "id": 18
+    },
+    {
+        "title": "Frozen Lemonade",
+        "description": "Frozen lemonade \u00e4r en uppfriskande sommardryck som kombinerar f\u00e4rskpressad citronsaft, is och s\u00f6tning till en svalkande, syrlig och s\u00f6tsyrlig smaksensation.",
+        "ingredients": [
+            "Citronsaft",
+            "Is",
+            "Socker*"
+        ],
+        "image": "https:\/\/images.unsplash.com\/photo-1523371054106-bbf80586c38c?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fGxlbW9uYWRlJTIwd2l0aCUyMGljZXxlbnwwfHwwfHx8MA%3D%3D",
+        "id": 19
+    },
+    {
+        "title": "Lemonad",
+        "description": "Var k\u00e4nd i Paris f\u00f6rst och blev sedan mycket popul\u00e4r i hela Europa. Denna s\u00f6ta, f\u00e4rgl\u00f6sa, kolsyrade dryck g\u00f6rs genom att blanda citronsaft och kolsyrat vatten.",
+        "ingredients": [
+            "Citronsaft",
+            "Kolsyrat vatten",
+            "Honung"
+        ],
+        "image": "https:\/\/images.unsplash.com\/photo-1621263764928-df1444c5e859?auto=format&fit=crop&q=60&w=800&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8bGVtb25hZGV8ZW58MHx8MHx8fDA%3D",
+        "id": 20
+    },
+    {
+        "title": "XXX",
+        "description": "Svart kaffe \u00e4r s\u00e5 enkelt som det kan bli med malda kaffeb\u00f6nor dr\u00e4nkta i hett vatten, serverat varmt. Och om du vill l\u00e5ta fancy kan du kalla svart kaffe med sitt r\u00e4tta namn: caf\u00e9 noir.",
+        "ingredients": [
+            "Coffee"
+        ],
+        "image": "https:\/\/images.unsplash.com\/photo-1494314671902-399b18174975?auto=format&fit=crop&q=80&w=1887&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "id": 21
+    }
+]

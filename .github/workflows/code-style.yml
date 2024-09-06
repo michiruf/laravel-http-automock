@@ -1,0 +1,27 @@
+name: Fix Code Style
+on:
+  push:
+    branches:
+      - master
+  workflow_call: # Make this workflow callable from other workflows
+  workflow_dispatch: # Make this workflow runnable on github
+
+permissions:
+  contents: write
+
+jobs:
+  fix-code-style:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # https://github.com/aglipanci/laravel-pint-action/tree/2.4
+      - name: Fix PHP code style issues
+        uses: aglipanci/laravel-pint-action@2.4
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Automatic code style fix

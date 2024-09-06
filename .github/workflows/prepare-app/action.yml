@@ -1,0 +1,30 @@
+name: Prepare App
+description: Install PHP, Composer & Project Dependencies
+
+inputs:
+  coverage:
+    description: Install PHP with coverage
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        extensions: imap
+        coverage: ${{ inputs.coverage == 'true' && 'pcov' || 'none' }}
+
+    - name: Install Dependencies
+      uses: ramsey/composer-install@v3
+
+    - name: Create Dotenv
+      shell: sh
+      if: ${{ hashFiles('.env.example') != '' }}
+      run: .env.example
+
+    - name: Generate App Key
+      shell: sh
+      if: ${{ hashFiles('.env') != '' }}
+      run: php artisan key:generate

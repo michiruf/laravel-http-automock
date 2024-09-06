@@ -1,0 +1,25 @@
+name: Feature Request
+description: Request a new Feature for the App
+title: "[Feature]: "
+labels: ["feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this feature request!
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect to happen?
+      placeholder: I cannot currently do X thing because when I do, it breaks X thing.
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: What can be improved?
+      description: Provide information as non technical as possible.
+      placeholder: When I do X I should see a new Y.
+    validations:
+      required: false

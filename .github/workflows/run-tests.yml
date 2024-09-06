@@ -1,0 +1,23 @@
+name: Run Tests
+on:
+  push:
+    branches:
+      - main
+  workflow_call: # Make this workflow callable from other workflows
+  workflow_dispatch: # Make this workflow runnable on github
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare App
+        uses: ./.github/workflows/prepare-app
+        with:
+          coverage: true
+
+      - name: Run Tests
+        run: vendor/bin/pest --exclude-group=long-running,wip,deploy -v --coverage
