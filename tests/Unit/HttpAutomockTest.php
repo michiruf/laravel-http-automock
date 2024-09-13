@@ -1,13 +1,23 @@
 <?php
 
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
-
+use Pest\TestSuite;
 use function Orchestra\Testbench\package_path;
 use function Pest\testDirectory;
 
-function mockFilePath(string $path): string
+function mockFilePath(?string $filename = null): string
 {
-    return package_path().'/'.testDirectory().config('http-automock.directory').$path;
+    $testInstance = TestSuite::getInstance();
+    $relativePath = str($testInstance->getFilename())
+        ->remove($testInstance->rootPath.DIRECTORY_SEPARATOR.$testInstance->testPath)
+        ->beforeLast('.')
+        ->toString();
+    $directoryPath = package_path().'/'.testDirectory().config('http-automock.directory').$relativePath.'/'.$testInstance->getDescription();
+    if ($filename) {
+        return $directoryPath.'/'.$filename;
+    }
+    return $directoryPath;
 }
 
 beforeEach(function () {
@@ -16,16 +26,16 @@ beforeEach(function () {
 
 it('can automock requests', function () {
     // Preconditions
-    $mockPath = mockFilePath('/Unit/HttpAutomockTest/it_can_automock_requests/840ef996fc9638ba15fc85317f923d3f.mock');
-    File::delete($mockPath);
-    expect(File::exists($mockPath))->toBeFalse("File at $mockPath must not exist");
+    $mockFilePath = mockFilePath('840ef996fc9638ba15fc85317f923d3f.mock');
+    File::delete($mockFilePath);
+    expect(File::exists($mockFilePath))->toBeFalse("File at $mockFilePath must not exist");
 
     Http::automock();
 
     // First call -> mock created
     Http::get('https://api.sampleapis.com/coffee/hot');
     Http::assertSentCount(1);
-    expect(File::exists($mockPath))->toBeTrue("File at $mockPath must exist");
+    expect(File::exists($mockFilePath))->toBeTrue("File at $mockFilePath must exist");
 
     // Second call -> not sent
     Http::preventStrayRequests();
@@ -34,7 +44,7 @@ it('can automock requests', function () {
 
 it('can mock when http fake is used #1', function () {
     // Preconditions
-    $mockDirectory = mockFilePath('/Unit/HttpAutomockTest/it_can_mock_when_http_fake_is_used__1/');
+    $mockDirectory = mockFilePath();
     File::deleteDirectory($mockDirectory);
     expect(File::isDirectory($mockDirectory))->toBeFalse();
 
@@ -52,7 +62,7 @@ it('can mock when http fake is used #1', function () {
 
 it('can mock when http fake is used #2', function () {
     // Preconditions
-    $mockDirectory = mockFilePath('/Unit/HttpAutomockTest/it_can_mock_when_http_fake_is_used__2/');
+    $mockDirectory = mockFilePath();
     File::deleteDirectory($mockDirectory);
     expect(File::isDirectory($mockDirectory))->toBeFalse();
 
@@ -81,54 +91,26 @@ it('can force renew responses', function () {
         ->and(Http::get('https://test')->body())->toBe('There');
 });
 
-//it('cannot make requests without mocks when renew is disallowed', function () {
-//    // Precondition
-//    $mockDirectory = mockFilePath('/Unit/HttpAutomockTest/it_cannot_make_request_without_mocks_when_renew_is_disallowed/');
-//    File::deleteDirectory($mockDirectory);
-//    expect(File::isDirectory($mockDirectory))->toBeFalse();
-//
-//    Http::automock()->renew(false);
-//    Http::get('https://api.sampleapis.com/coffee/hot');
-//
-//    // Precondition is configured properly
-//    expect(File::isDirectory($mockDirectory))->toBeTrue('Set up wrong directory in test');
-//})->throws(RuntimeException::class, 'Tried to send a request that has renewing disallowed');
+it('cannot make requests without mocks when renew is disallowed', function () {
+    ray()->showHttpClientRequests();
 
-it('can enable pretty printing responses', function () {
-    // Preconditions
-    $mockPath = mockFilePath('/Unit/HttpAutomockTest/it_can_enable_pretty_printing_responses/dbfa9a6776f62af138c73e2558e8f336.mock');
-    File::delete($mockPath);
-    expect(File::exists($mockPath))->toBeFalse("File at $mockPath must not exist");
+    // Precondition
+    $mockDirectory = mockFilePath();
+    File::deleteDirectory($mockDirectory);
+    expect(File::isDirectory($mockDirectory))->toBeFalse();
 
-    Http::automock()->jsonPrettyPrint();
-    Http::fake([
-        'https://test' => Http::response('{"hello":"world"}', headers: ['Content-Type' => 'application/json']),
-    ]);
-    Http::get('https://test');
-    expect(File::get($mockPath))->toBe("{\n    \"hello\": \"world\"\n}"); // also checks precondition
-});
+    Http::automock()->renew(false);
+    Http::get('https://api.sampleapis.com/coffee/hot');
 
-it('can disable pretty printing responses', function () {
-    // Preconditions
-    $mockPath = mockFilePath('/Unit/HttpAutomockTest/it_can_disable_pretty_printing_responses/dbfa9a6776f62af138c73e2558e8f336.mock');
-    File::delete($mockPath);
-    expect(File::exists($mockPath))->toBeFalse("File at $mockPath must not exist");
-
-    Http::automock()->jsonPrettyPrint(false);
-    Http::fake([
-        'https://test' => Http::response('{"hello":"world"}', headers: ['Content-type' => 'application/json']),
-    ]);
-    Http::get('https://test');
-    expect(File::get($mockPath))->toBe('{"hello":"world"}'); // also checks precondition
-});
+    // Precondition is configured properly
+    expect(File::isDirectory($mockDirectory))->toBeTrue('Set up wrong directory in test');
+})->throws(RuntimeException::class, 'Tried to send a request that has renewing disallowed');
 
 it('can enable and disable pretty printing responses', function () {
-    // TODO Decide whit tests to keep for disabling pretty print
-
-    // Preconditions
-    $mockPath = mockFilePath('/Unit/HttpAutomockTest/it_can_enable_and_disable_pretty_printing_responses/dbfa9a6776f62af138c73e2558e8f336.mock');
-    File::delete($mockPath);
-    expect(File::exists($mockPath))->toBeFalse("File at $mockPath must not exist");
+    // Precondition
+    $mockFilePath = mockFilePath('dbfa9a6776f62af138c73e2558e8f336.mock');
+    File::delete($mockFilePath);
+    expect(File::exists($mockFilePath))->toBeFalse("File at $mockFilePath must not exist");
 
     Http::fake([
         'https://test' => Http::response('{"hello":"world"}', headers: ['Content-type' => 'application/json']),
@@ -136,11 +118,62 @@ it('can enable and disable pretty printing responses', function () {
 
     Http::automock()->jsonPrettyPrint(false);
     Http::get('https://test');
-    expect(File::get($mockPath))->toBe('{"hello":"world"}'); // also checks precondition
+    expect(File::get($mockFilePath))->toBe('{"hello":"world"}'); // also checks precondition
 
-    File::delete($mockPath);
+    File::delete($mockFilePath);
 
     Http::automock()->jsonPrettyPrint();
     Http::get('https://test');
-    expect(File::get($mockPath))->toBe("{\n    \"hello\": \"world\"\n}"); // also checks precondition
+    expect(File::get($mockFilePath))->toBe("{\n    \"hello\": \"world\"\n}"); // also checks precondition
+});
+
+it('can enable and disable skipping requests', function () {
+    // Precondition
+    $mockDirectory = mockFilePath();
+    File::deleteDirectory($mockDirectory);
+    expect(File::isDirectory($mockDirectory))->toBeFalse();
+
+    Http::fake([
+        'https://test' => Http::response('Hello'),
+    ]);
+    Http::automock()->skip('https://test');
+    Http::get('https://test');
+    expect(File::isDirectory($mockDirectory))->toBeFalse();
+
+    Http::automock()->stopSkip();
+    Http::get('https://test');
+    expect(File::isDirectory($mockDirectory))->toBeTrue();
+});
+
+it('can skip all except get requests', function () {
+    // Precondition
+    $mockDirectory = mockFilePath();
+    File::deleteDirectory($mockDirectory);
+    expect(File::isDirectory($mockDirectory))->toBeFalse();
+
+    Http::fake([
+        'https://test' => Http::response('Hello'),
+    ]);
+    Http::automock()->skipUnlessGet();
+    Http::post('https://test');
+    expect(File::isDirectory($mockDirectory))->toBeFalse();
+
+    Http::get('https://test');
+    expect(File::isDirectory($mockDirectory))->toBeTrue();
+});
+
+it('can skip get requests', function () {
+    // TODO
+});
+
+it('can skip post requests', function () {
+    // TODO
+});
+
+it('can skip put requests', function () {
+    // TODO
+});
+
+it('can skip delete requests', function () {
+    // TODO
 });
