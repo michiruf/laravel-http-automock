@@ -24,6 +24,8 @@ class HttpAutomockServiceProvider extends PackageServiceProvider
 
     public function bootingPackage(): void
     {
+        $this->app->bind(RequestFileNameResolverInterface::class, RequestFileNameResolver::class);
+
         Http::mixin(new HttpAutomockMixin);
     }
 }

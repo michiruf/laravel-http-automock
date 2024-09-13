@@ -106,6 +106,8 @@ it('cannot make requests without mocks when renew is disallowed', function () {
     expect(File::isDirectory($mockDirectory))->toBeTrue('Set up wrong directory in test');
 })->throws(RuntimeException::class, 'Tried to send a request that has renewing disallowed');
 
+todo('can specify the filename resolution strategy');
+
 it('can enable and disable pretty printing responses', function () {
     // Precondition
     $mockFilePath = mockFilePath('dbfa9a6776f62af138c73e2558e8f336.mock');
@@ -162,18 +164,18 @@ it('can skip all except get requests', function () {
     expect(File::isDirectory($mockDirectory))->toBeTrue();
 });
 
-it('can skip get requests', function () {
+todo('can skip get requests', function () {
     // TODO
 });
 
-it('can skip post requests', function () {
+todo('can skip post requests', function () {
     // TODO
 });
 
-it('can skip put requests', function () {
+todo('can skip put requests', function () {
     // TODO
 });
 
-it('can skip delete requests', function () {
+todo('can skip delete requests', function () {
     // TODO
 });

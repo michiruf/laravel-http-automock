@@ -20,6 +20,8 @@ class HttpAutomock
 
     protected bool $registered = false;
 
+    protected string|Closure|null $resolveFileNameStrategy = null;
+
     /** @see static::renew() */
     protected ?bool $renew = null;
 
@@ -30,6 +32,11 @@ class HttpAutomock
 
     /** @var Closure<Request, bool>[] */
     protected array $filters = [];
+
+    public function __construct(
+        protected RequestFileNameResolverInterface $fileNameResolver
+    ) {
+    }
 
     public function enable(): static
     {
@@ -75,8 +82,8 @@ class HttpAutomock
                     // The Http response with 599 is faked, to ensure that no request will be made ever.
                     return Http::response(status: 599);
                 } else {
-                throw new RuntimeException('Tried to send a request that has renewing disallowed');
-            }
+                    throw new RuntimeException('Tried to send a request that has renewing disallowed');
+                }
             }
 
             return null;
@@ -131,7 +138,7 @@ class HttpAutomock
         });
     }
 
-    protected function resolveFilePath(Request $request, bool $new): string
+    protected function resolveFilePath(Request $request, bool $forWriting): string
     {
         $testInstance = TestSuite::getInstance();
         $relativePath = str($testInstance->getFilename())
@@ -140,11 +147,7 @@ class HttpAutomock
             ->toString();
         $description = $testInstance->getDescription();
 
-        if ($new) {
-            $this->count++;
-        }
-
-        $fileName = $this->resolveFileName($request, $this->count);
+        $fileName = $this->resolveFileName($request, $forWriting);
 
         return str('')
             ->append($testInstance->rootPath.DIRECTORY_SEPARATOR)
@@ -157,13 +160,9 @@ class HttpAutomock
             ->toString();
     }
 
-    protected function resolveFileName(Request $request, int $count): string
+    protected function resolveFileName(Request $request, bool $forWriting): string
     {
-        return match (config('http-automock.filename_resolution_strategy')) {
-            'count' => $count,
-            'url_md5' => md5($request->url()),
-            'data_md5' => md5(dd(json_encode($request))) // TODO Test this
-        };
+        return $this->fileNameResolver->resolve($this->resolveFileNameStrategy, $request, $forWriting);
     }
 
     protected function requestFiltered(Request $request): bool
@@ -182,6 +181,13 @@ class HttpAutomock
         }
 
         return false;
+    }
+
+    public function resolveFileNameUsing(string|callable $strategy): static
+    {
+        $this->resolveFileNameStrategy = $strategy;
+
+        return $this;
     }
 
     /**
