@@ -45,5 +45,14 @@ return [
     */
     'filename_resolution_strategy' => 'count',
 
-    'json_prettyprint' => true, // TODO Use this
+    /*
+    |--------------------------------------------------------------------------
+    | JSON Pretty print
+    |--------------------------------------------------------------------------
+    |
+    | Enables pretty print for mocks created with automock, when the responses
+    | Content-Type is application/json.
+    |
+    */
+    'json_prettyprint' => true,
 ];

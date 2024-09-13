@@ -2,11 +2,15 @@
 
 namespace HttpAutomock;
 
+use Closure;
 use Illuminate\Http\Client\Events\ResponseReceived;
+use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use Pest\TestSuite;
 use RuntimeException;
 
@@ -16,14 +20,16 @@ class HttpAutomock
 
     protected bool $registered = false;
 
-    /**
-     * @var bool|null Renew if null, renew always if true, renew never if false
-     */
+    /** @see static::renew() */
     protected ?bool $renew = null;
 
     protected ?bool $jsonPrettyPrint = null;
 
-    public int $count = 0;
+    /** @var String[] */
+    protected array $urlFilters = [];
+
+    /** @var Closure<Request, bool>[] */
+    protected array $filters = [];
 
     public function enable(): static
     {
@@ -124,7 +130,18 @@ class HttpAutomock
 
     protected function requestFiltered(Request $request): bool
     {
-        // TODO
+        foreach ($this->urlFilters as $urlFilter) {
+            /** @see Factory::stubUrl() */
+            if (Str::is(Str::start($urlFilter, '*'), $request->url())) {
+                return true;
+            }
+        }
+
+        foreach ($this->filters as $filter) {
+            if ($filter($request)) {
+                return true;
+            }
+        }
 
         return false;
     }
@@ -139,6 +156,9 @@ class HttpAutomock
         return $this;
     }
 
+    /**
+     * @param  bool|null  $prettyPrint  Pretty print json responses, null to reset to config value
+     */
     public function jsonPrettyPrint(?bool $prettyPrint = true): static
     {
         $this->jsonPrettyPrint = $prettyPrint;
@@ -146,16 +166,68 @@ class HttpAutomock
         return $this;
     }
 
-    // TODO Implement & test
-    public function skip(string|callable $url): static
+    public function skip(string|callable $url, ?string $alias = null): static
     {
+        match (true) {
+            is_string($url) => $alias
+                ? $this->urlFilters[$alias] = $url
+                : $this->urlFilters[] = $url,
+            is_callable($url) => $alias
+                ? $this->filters[$alias] = $url
+                : $this->filters[] = $url,
+            default => throw new RuntimeException("Invalid filter type"),
+        };
+
         return $this;
     }
 
-    // TODO Test
+    // TODO Test all filters
     public function skipUnlessGet(): static
     {
-        $this->skip(fn (Request $request) => $request->method() !== 'GET');
+        $this->skip(fn (Request $request) => $request->method() !== 'GET', 'unless-get');
+
+        return $this;
+    }
+
+    public function skipGet(): static
+    {
+        $this->skip(fn (Request $request) => $request->method() === 'GET', 'get');
+
+        return $this;
+    }
+
+    public function skipPost(): static
+    {
+        $this->skip(fn (Request $request) => $request->method() === 'POST', 'post');
+
+        return $this;
+    }
+
+    public function skipPut(): static
+    {
+        $this->skip(fn (Request $request) => $request->method() === 'PUT', 'put');
+
+        return $this;
+    }
+
+    public function skipDelete(): static
+    {
+        $this->skip(fn (Request $request) => $request->method() === 'DELETE', 'delete');
+
+        return $this;
+    }
+
+    public function stopSkip(?string $alias = null): static
+    {
+        if ($alias) {
+            Arr::forget($this->urlFilters, $alias);
+            Arr::forget($this->filters, $alias);
+
+            return $this;
+        }
+
+        $this->urlFilters = [];
+        $this->filters = [];
 
         return $this;
     }
