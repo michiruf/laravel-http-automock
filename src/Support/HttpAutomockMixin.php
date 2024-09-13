@@ -2,7 +2,7 @@
 
 namespace HttpAutomock\Support;
 
-use HttpAutomock\Facade\HttpAutomock as HttpAutomockFacade;
+use HttpAutomock\Facades\HttpAutomock as HttpAutomockFacade;
 use HttpAutomock\HttpAutomock;
 
 class HttpAutomockMixin

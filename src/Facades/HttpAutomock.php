@@ -1,6 +1,6 @@
 <?php
 
-namespace HttpAutomock\Facade;
+namespace HttpAutomock\Facades;
 
 use HttpAutomock\HttpAutomock as BaseHttpAutomock;
 use Illuminate\Support\Facades\Facade;
