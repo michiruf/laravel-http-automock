@@ -38,6 +38,9 @@ class HttpAutomock
         if (! $this->registered) {
             $this->registerFakeHandler();
             $this->registerResponseEventHandler();
+            if (config('http-automock.xdebug_develop_mode_compat')) {
+                $this->registerXdebugCompatExceptionsMiddleware();
+            }
             $this->registered = true;
         }
 
@@ -63,7 +66,17 @@ class HttpAutomock
 
                 return Http::response($content);
             } elseif ($this->renew === false) {
+                // We would like to throw an exception here, but when we do this, there sometimes
+                // will occur a segmentation fault, if xdebug develop mode is enabled.
+                // @see https://xdebug.org/docs/develop
+                // To avoid this, we separate the validation in a middleware if the compat flag is enabled.
+                // @see registerExceptionsMiddleware()
+                if (config('http-automock.xdebug_develop_mode_compat')) {
+                    // The Http response with 599 is faked, to ensure that no request will be made ever.
+                    return Http::response(status: 599);
+                } else {
                 throw new RuntimeException('Tried to send a request that has renewing disallowed');
+            }
             }
 
             return null;
@@ -90,6 +103,31 @@ class HttpAutomock
                 File::ensureDirectoryExists(dirname($filePath));
                 File::put($filePath, $content);
             }
+        });
+    }
+
+    protected function registerXdebugCompatExceptionsMiddleware(): void
+    {
+        // This middleware ensures, that we can throw exceptions when we need to, since
+        // it sometimes causes a segmentation fault when throwing exceptions in a callback
+        // inside Http::fake(), if xdebug develop mode is enabled.
+        // @see registerFakeHandler()
+
+        Http::globalRequestMiddleware(function ($guzzleRequest) {
+            // Wrap GuzzleHttp\Psr7\Request in a Illuminate\Http\Client\Request
+            $request = new Request($guzzleRequest);
+
+            if (! $this->enabled || $this->renew !== false || $this->requestFiltered($request)) {
+                return $guzzleRequest;
+            }
+
+            $filePath = $this->resolveFilePath($request, false);
+
+            if (! File::exists($filePath)) {
+                throw new RuntimeException('Tried to send a request that has renewing disallowed');
+            }
+
+            return $guzzleRequest;
         });
     }
 

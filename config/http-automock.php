@@ -55,4 +55,19 @@ return [
     |
     */
     'json_prettyprint' => true,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Xdebug develop mode compat
+    |--------------------------------------------------------------------------
+    |
+    | Xdebug causes an issue if develop mode is activated and the Http::fake()
+    | method throws an exception. When this flag is enabled, no exceptions will
+    | be thrown in Http::fake(), but an additional middleware that throws
+    | the exceptions instead will get registered.
+    |
+    | Use this if you encounter a segmentation fault or a process signal 11.
+    |
+     */
+    'xdebug_develop_mode_compat' => false,
 ];
