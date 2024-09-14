@@ -10,6 +10,15 @@ TODO
 ## Installation
 
 TODO
+```shell
+composer require 
+
+```
+
+Publish the config:
+```shell
+php artisan vendor:publish --tag="http-automock-config"
+```
 
 ## TODOs
 

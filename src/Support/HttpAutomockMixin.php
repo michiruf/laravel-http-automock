@@ -25,9 +25,11 @@ class HttpAutomockMixin
     {
         /**
          * Disable automatically mocking requests.
+         *
+         * @return HttpAutomock
          */
-        return function (): void {
-            HttpAutomockFacade::disable();
+        return function (): HttpAutomock {
+            return HttpAutomockFacade::disable();
         };
     }
 }

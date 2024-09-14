@@ -225,7 +225,6 @@ class HttpAutomock
         return $this;
     }
 
-    // TODO Test all filters
     public function skipUnlessGet(): static
     {
         $this->skip(fn (Request $request) => $request->method() !== 'GET', 'unless-get');

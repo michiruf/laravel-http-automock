@@ -92,8 +92,6 @@ it('can force renew responses', function () {
 });
 
 it('cannot make requests without mocks when renew is disallowed', function () {
-    ray()->showHttpClientRequests();
-
     // Precondition
     $mockDirectory = mockFilePath();
     File::deleteDirectory($mockDirectory);
@@ -106,7 +104,7 @@ it('cannot make requests without mocks when renew is disallowed', function () {
     expect(File::isDirectory($mockDirectory))->toBeTrue('Set up wrong directory in test');
 })->throws(RuntimeException::class, 'Tried to send a request that has renewing disallowed');
 
-todo('can specify the filename resolution strategy');
+todo('can specify filename resolution strategies');
 
 it('can enable and disable pretty printing responses', function () {
     // Precondition

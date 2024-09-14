@@ -6,8 +6,7 @@ use HttpAutomock\HttpAutomock as BaseHttpAutomock;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @method BaseHttpAutomock enable():
- * @method void disable():
+ * @mixin BaseHttpAutomock
  */
 class HttpAutomock extends Facade
 {
