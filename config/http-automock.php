@@ -29,7 +29,7 @@ return [
     | Filename Resolution Strategy
     |--------------------------------------------------------------------------
     |
-    | The strategy used name your generated mocks within the context of one
+    | The strategy used to name your generated mocks within the context of one
     | test.
     |
     | 'data_md5': Hashes the url and the payload and the header with md5.
@@ -44,6 +44,12 @@ return [
     |
     */
     'filename_resolution_strategy' => 'count',
+    'filename_resolution_strategy2' => [ // TODO Do it like so?
+        'url',
+        'path',
+        'payload',
+        'count'
+    ],
 
     /*
     |--------------------------------------------------------------------------
