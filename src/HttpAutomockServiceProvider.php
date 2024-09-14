@@ -2,6 +2,12 @@
 
 namespace HttpAutomock;
 
+use HttpAutomock\Serialization\RequestFileNameResolver;
+use HttpAutomock\Serialization\RequestFileNameResolverInterface;
+use HttpAutomock\Serialization\RequestSerializer;
+use HttpAutomock\Serialization\RequestSerializerInterface;
+use HttpAutomock\Serialization\ResponseSerializer;
+use HttpAutomock\Serialization\ResponseSerializerInterface;
 use HttpAutomock\Support\HttpAutomockMixin;
 use Illuminate\Support\Facades\Http;
 use Spatie\LaravelPackageTools\Package;
@@ -24,6 +30,8 @@ class HttpAutomockServiceProvider extends PackageServiceProvider
 
     public function bootingPackage(): void
     {
+        $this->app->bind(RequestSerializerInterface::class, RequestSerializer::class);
+        $this->app->bind(ResponseSerializerInterface::class, ResponseSerializer::class);
         $this->app->bind(RequestFileNameResolverInterface::class, RequestFileNameResolver::class);
 
         Http::mixin(new HttpAutomockMixin);

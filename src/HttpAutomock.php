@@ -3,6 +3,10 @@
 namespace HttpAutomock;
 
 use Closure;
+use GuzzleHttp\Promise\Create;
+use HttpAutomock\Facades\HttpAutomockResponseSerializer;
+use HttpAutomock\Serialization\RequestFileNameResolverInterface;
+use HttpAutomock\Serialization\ResponseSerializerInterface;
 use Illuminate\Http\Client\Events\ResponseReceived;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\Request;
@@ -34,7 +38,8 @@ class HttpAutomock
     protected array $filters = [];
 
     public function __construct(
-        protected RequestFileNameResolverInterface $fileNameResolver
+        protected RequestFileNameResolverInterface $fileNameResolver,
+        protected ResponseSerializerInterface $responseSerializer,
     ) {
     }
 
@@ -54,9 +59,11 @@ class HttpAutomock
         return $this;
     }
 
-    public function disable(): void
+    public function disable(): static
     {
         $this->enabled = false;
+
+        return $this;
     }
 
     protected function registerFakeHandler(): void
@@ -71,7 +78,7 @@ class HttpAutomock
             if (File::exists($filePath) && $this->renew !== true) {
                 $content = File::get($filePath);
 
-                return Http::response($content);
+                return Create::promiseFor($this->responseSerializer->deserialize($content));
             } elseif ($this->renew === false) {
                 // We would like to throw an exception here, but when we do this, there sometimes
                 // will occur a segmentation fault, if xdebug develop mode is enabled.
@@ -100,12 +107,13 @@ class HttpAutomock
             $filePath = $this->resolveFilePath($event->request, true);
 
             if (! File::exists($filePath) || $this->renew === true) {
-                $content = $event->response;
+                $jsonPrettyPrint = $this->jsonPrettyPrint !== null
+                    ? $this->jsonPrettyPrint
+                    : config('http-automock.json_prettyprint');
 
-                $jsonPrettyPrint = $this->jsonPrettyPrint !== null ? $this->jsonPrettyPrint : config('http-automock.json_prettyprint');
-                if ($jsonPrettyPrint && str($content->header('content-type'))->startsWith('application/json')) {
-                    $content = json_encode($content->json(), JSON_PRETTY_PRINT);
-                }
+                $content = $this->responseSerializer
+                    ->serializeJsonPretty($jsonPrettyPrint)
+                    ->serialize($event->response->toPsrResponse());
 
                 File::ensureDirectoryExists(dirname($filePath));
                 File::put($filePath, $content);
