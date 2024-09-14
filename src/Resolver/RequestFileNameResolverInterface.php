@@ -1,6 +1,6 @@
 <?php
 
-namespace HttpAutomock\Serialization;
+namespace HttpAutomock\Resolver;
 
 use Illuminate\Http\Client\Request;
 

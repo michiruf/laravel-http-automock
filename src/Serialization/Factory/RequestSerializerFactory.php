@@ -2,28 +2,27 @@
 
 namespace HttpAutomock\Serialization\Factory;
 
+use HttpAutomock\Serialization\RequestSerializer;
 use HttpAutomock\Serialization\RequestSerializerInterface;
+use Illuminate\Http\Client\Request;
 
-class RequestSerializerFactory
+/**
+ * @deprecated
+ */
+class RequestSerializerFactory extends SerializerFactoryBase
 {
-    public function withoutHeader(string $header): static
-    {
-    }
-
-    public function withoutAuthenticationHeader(): static
-    {
-    }
-
-    public function prettyPrintJson(bool $enabled): static
-    {
-    }
-
     public function serializer(): RequestSerializerInterface
     {
+        return new RequestSerializer($this->withoutHeaders, $this->prettyPrintJson);
     }
 
-    public function serialize(): string
+    public function serialize(Request $request): string
     {
+        return $this->serializer()->serialize($request);
+    }
 
+    public function deserialize(string $request): Request
+    {
+        return $this->serializer()->deserialize($request);
     }
 }

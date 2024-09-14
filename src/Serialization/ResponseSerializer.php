@@ -3,26 +3,24 @@
 namespace HttpAutomock\Serialization;
 
 use GuzzleHttp\Psr7\Message;
-use Psr\Http\Message\ResponseInterface;
+use Illuminate\Http\Client\Response;
 
-class ResponseSerializer implements ResponseSerializerInterface
+/**
+ * @deprecated
+ */
+class ResponseSerializer extends SerializerBase implements ResponseSerializerInterface
 {
-    protected bool $jsonPrettyPrint = false;
-
-    public function serialize(ResponseInterface $response): string
+    public function serialize(Response $response): string
     {
-        return Message::toString($response);
+        $psrResponse = $response->toPsrResponse();
+        $psrResponse = $this->removeHeaders($psrResponse);
+        $psrResponse = $this->prettyPrintJson($psrResponse);
+
+        return Message::toString($psrResponse);
     }
 
-    public function deserialize(string $response): ResponseInterface
+    public function deserialize(string $response): Response
     {
-        return Message::parseResponse($response);
-    }
-
-    public function serializeJsonPretty(bool $enabled): static
-    {
-        $this->jsonPrettyPrint = $enabled;
-
-        return $this;
+        return new Response(Message::parseResponse($response));
     }
 }

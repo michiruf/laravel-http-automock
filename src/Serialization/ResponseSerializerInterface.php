@@ -2,11 +2,15 @@
 
 namespace HttpAutomock\Serialization;
 
-use Psr\Http\Message\ResponseInterface;
 
-interface ResponseSerializerInterface extends SerializerInterface
+use Illuminate\Http\Client\Response;
+
+/**
+ * @deprecated
+ */
+interface ResponseSerializerInterface
 {
-    public function serialize(ResponseInterface $response): string;
+    public function serialize(Response $response): string;
 
-    public function deserialize(string $response): ResponseInterface;
+    public function deserialize(string $response): Response;
 }

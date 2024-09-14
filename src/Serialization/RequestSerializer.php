@@ -3,17 +3,25 @@
 namespace HttpAutomock\Serialization;
 
 use GuzzleHttp\Psr7\Message;
-use Psr\Http\Message\RequestInterface;
+use Illuminate\Http\Client\Request;
+use RuntimeException;
 
-class RequestSerializer implements RequestSerializerInterface
+/**
+ * @deprecated
+ */
+class RequestSerializer extends SerializerBase implements RequestSerializerInterface
 {
-    public function serialize(RequestInterface $request): string
+    public function serialize(Request $request): string
     {
-        return Message::toString($request);
+        $psrRequest = $request->toPsrRequest();
+        $psrRequest = $this->removeHeaders($psrRequest);
+        $psrRequest = $this->prettyPrintJson($psrRequest);
+
+        return Message::toString($psrRequest);
     }
 
-    public function deserialize(string $request): RequestInterface
+    public function deserialize(string $request): Request
     {
-        return Message::parseRequest($request);
+        throw new RuntimeException("Not implemented");
     }
 }

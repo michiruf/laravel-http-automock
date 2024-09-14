@@ -4,9 +4,8 @@ namespace HttpAutomock;
 
 use Closure;
 use GuzzleHttp\Promise\Create;
-use HttpAutomock\Facades\HttpAutomockResponseSerializer;
-use HttpAutomock\Serialization\RequestFileNameResolverInterface;
-use HttpAutomock\Serialization\ResponseSerializerInterface;
+use HttpAutomock\Resolver\RequestFileNameResolverInterface;
+use HttpAutomock\Serialization\Factory\MessageSerializerFactory;
 use Illuminate\Http\Client\Events\ResponseReceived;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\Request;
@@ -39,7 +38,7 @@ class HttpAutomock
 
     public function __construct(
         protected RequestFileNameResolverInterface $fileNameResolver,
-        protected ResponseSerializerInterface $responseSerializer,
+        protected MessageSerializerFactory $messageSerializerFactory,
     ) {
     }
 
@@ -76,9 +75,10 @@ class HttpAutomock
             $filePath = $this->resolveFilePath($request, false);
 
             if (File::exists($filePath) && $this->renew !== true) {
-                $content = File::get($filePath);
+                $fileContent = File::get($filePath);
+                $response = $this->messageSerializerFactory->deserialize($fileContent);
 
-                return Create::promiseFor($this->responseSerializer->deserialize($content));
+                return Create::promiseFor($response);
             } elseif ($this->renew === false) {
                 // We would like to throw an exception here, but when we do this, there sometimes
                 // will occur a segmentation fault, if xdebug develop mode is enabled.
@@ -111,12 +111,12 @@ class HttpAutomock
                     ? $this->jsonPrettyPrint
                     : config('http-automock.json_prettyprint');
 
-                $content = $this->responseSerializer
-                    ->serializeJsonPretty($jsonPrettyPrint)
+                $fileContent = $this->messageSerializerFactory
+                    ->prettyPrintJson($jsonPrettyPrint)
                     ->serialize($event->response->toPsrResponse());
 
                 File::ensureDirectoryExists(dirname($filePath));
-                File::put($filePath, $content);
+                File::put($filePath, $fileContent);
             }
         });
     }

@@ -2,11 +2,14 @@
 
 namespace HttpAutomock\Serialization;
 
-use Psr\Http\Message\RequestInterface;
+use Illuminate\Http\Client\Request;
 
-interface RequestSerializerInterface extends SerializerInterface
+/**
+ * @deprecated
+ */
+interface RequestSerializerInterface
 {
-    public function serialize(RequestInterface $request): string;
+    public function serialize(Request $request): string;
 
-    public function deserialize(string $request): RequestInterface;
+    public function deserialize(string $request): Request;
 }
