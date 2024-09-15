@@ -27,7 +27,7 @@ class PsrMessageSerializer implements PsrMessageSerializerInterface
         return Message::parseResponse($message);
     }
 
-    public function removeHeaders(MessageInterface $message): MessageInterface
+    protected function removeHeaders(MessageInterface $message): MessageInterface
     {
         foreach ($this->withoutHeaders as $header) {
             $message = $message->withoutHeader($header);
@@ -36,7 +36,7 @@ class PsrMessageSerializer implements PsrMessageSerializerInterface
         return $message;
     }
 
-    public function prettyPrintJson(MessageInterface $message): MessageInterface
+    protected function prettyPrintJson(MessageInterface $message): MessageInterface
     {
         if (! $this->prettyPrintJson) {
             return $message;

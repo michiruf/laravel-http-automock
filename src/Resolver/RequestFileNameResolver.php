@@ -2,7 +2,8 @@
 
 namespace HttpAutomock\Resolver;
 
-use HttpAutomock\Serialization\Factory\RequestSerializerFactory;
+use HttpAutomock\Serialization\Factory\MessageSerializerFactory;
+use HttpAutomock\Serialization\PsrMessageSerializer;
 use Illuminate\Http\Client\Request;
 use RuntimeException;
 
@@ -11,7 +12,7 @@ class RequestFileNameResolver implements RequestFileNameResolverInterface
     public int $count;
 
     public function __construct(
-        protected RequestSerializerFactory $requestSerializerFactory
+        protected MessageSerializerFactory $messageSerializerFactory
     ) {
         $this->count = 0;
     }
@@ -48,7 +49,7 @@ class RequestFileNameResolver implements RequestFileNameResolverInterface
 
     protected function dataMd5(Request $request): string
     {
-        $content = $this->requestSerializerFactory->serialize($request);
+        $content = $this->messageSerializerFactory->serialize($request->toPsrRequest());
         return md5($content);
     }
 }
