@@ -1,9 +1,7 @@
 <?php
 
-namespace HttpAutomock\Serialization\Factory;
+namespace HttpAutomock\Serialization;
 
-use HttpAutomock\Serialization\PsrMessageSerializer;
-use HttpAutomock\Serialization\PsrMessageSerializerInterface;
 use Psr\Http\Message\MessageInterface;
 
 class MessageSerializerFactory

@@ -2,8 +2,7 @@
 
 namespace HttpAutomock\Resolver;
 
-use HttpAutomock\Serialization\Factory\MessageSerializerFactory;
-use HttpAutomock\Serialization\PsrMessageSerializer;
+use HttpAutomock\Serialization\MessageSerializerFactory;
 use Illuminate\Http\Client\Request;
 use RuntimeException;
 

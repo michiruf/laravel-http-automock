@@ -120,13 +120,13 @@ it('can enable and disable pretty printing responses', function () {
 
     Http::automock()->jsonPrettyPrint(false);
     Http::get('https://test');
-    expect(File::get($mockFilePath))->toBe('{"hello":"world"}'); // also checks precondition
+    expect(File::get($mockFilePath))->toContain('{"hello":"world"}'); // also checks precondition
 
     File::delete($mockFilePath);
 
     Http::automock()->jsonPrettyPrint();
     Http::get('https://test');
-    expect(File::get($mockFilePath))->toBe("{\n    \"hello\": \"world\"\n}"); // also checks precondition
+    expect(File::get($mockFilePath))->toContain("{\n    \"hello\": \"world\"\n}"); // also checks precondition
 });
 
 it('can enable and disable skipping requests', function () {

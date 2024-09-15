@@ -5,7 +5,7 @@ namespace HttpAutomock;
 use Closure;
 use GuzzleHttp\Promise\Create;
 use HttpAutomock\Resolver\RequestFileNameResolverInterface;
-use HttpAutomock\Serialization\Factory\MessageSerializerFactory;
+use HttpAutomock\Serialization\MessageSerializerFactory;
 use Illuminate\Http\Client\Events\ResponseReceived;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\Request;
