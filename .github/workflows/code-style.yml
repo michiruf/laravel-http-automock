@@ -19,7 +19,7 @@ jobs:
 
       # https://github.com/aglipanci/laravel-pint-action/tree/2.4
       - name: Fix PHP code style issues
-        uses: aglipanci/laravel-pint-action@2.4
+        uses: aglipanci/laravel-pint-action@2.5
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v5
