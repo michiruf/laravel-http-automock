@@ -9,14 +9,14 @@ use Psr\Http\Message\MessageInterface;
 class PsrMessageSerializer implements PsrMessageSerializerInterface
 {
     public function __construct(
-        protected array $withoutHeaders,
+        protected array $headers,
         protected bool $prettyPrintJson,
     ) {
     }
 
     public function serialize(MessageInterface $message): string
     {
-        $message = $this->removeHeaders($message);
+        $message = $this->filterHeaders($message);
         $message = $this->prettyPrintJson($message);
 
         return Message::toString($message);
@@ -27,10 +27,18 @@ class PsrMessageSerializer implements PsrMessageSerializerInterface
         return Message::parseResponse($message);
     }
 
-    protected function removeHeaders(MessageInterface $message): MessageInterface
+    protected function filterHeaders(MessageInterface $message): MessageInterface
     {
-        foreach ($this->withoutHeaders as $header) {
-            $message = $message->withoutHeader($header);
+        $messageHeaders = array_keys($message->getHeaders());
+
+        foreach ($messageHeaders as $messageHeader) {
+            foreach ($this->headers as $filter) {
+                if (str($messageHeader)->is($filter)) {
+                    continue 2;
+                }
+            }
+
+            $message = $message->withoutHeader($messageHeader);
         }
 
         return $message;

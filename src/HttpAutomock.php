@@ -25,8 +25,9 @@ class HttpAutomock
 
     protected string|Closure|null $resolveFileNameStrategy = null;
 
-    /** @see static::renew() */
     protected ?bool $renew = null;
+
+    protected array|bool|null $headers = null;
 
     protected ?bool $jsonPrettyPrint = null;
 
@@ -111,7 +112,17 @@ class HttpAutomock
                     ? $this->jsonPrettyPrint
                     : config('http-automock.json_prettyprint');
 
+                $headers = match ($this->headers) {
+                    null => config('http-automock.use_default_headers')
+                        ? config('http-automock.default_header_list')
+                        : [],
+                    false => [],
+                    true => ['*'],
+                    default => $this->headers,
+                };
+
                 $fileContent = $this->messageSerializerFactory
+                    ->withHeaders($headers)
                     ->prettyPrintJson($jsonPrettyPrint)
                     ->serialize($event->response->toPsrResponse());
 
@@ -206,6 +217,20 @@ class HttpAutomock
         $this->renew = $renew;
 
         return $this;
+    }
+
+    /**
+     * @param  array|bool|null  $headers  Headers to include in the mock file, null to reset to config value
+     */
+    public function withHeaders(array|bool|null $headers = true): static
+    {
+        $this->headers = $headers;
+
+        return $this;
+    }
+
+    public function withAllHeaders(): static {
+        return $this->withHeaders(['*']);
     }
 
     /**

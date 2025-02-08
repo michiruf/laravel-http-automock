@@ -6,17 +6,13 @@ use Psr\Http\Message\MessageInterface;
 
 class MessageSerializerFactory
 {
-    protected array $withoutHeaders = [];
+    protected array $headers = [];
 
-    protected bool $prettyPrintJson;
+    protected bool $prettyPrintJson = false;
 
-    public function withoutHeader(string|array $header): static
+    public function withHeaders(?array $headers): static
     {
-        if (is_array($header)) {
-            array_push($this->withoutHeaders, ...$header);
-        } else {
-            $this->withoutHeaders[] = $header;
-        }
+        $this->headers = $headers;
 
         return $this;
     }
@@ -30,7 +26,7 @@ class MessageSerializerFactory
 
     public function serializer(): PsrMessageSerializerInterface
     {
-        return new PsrMessageSerializer($this->withoutHeaders, $this->prettyPrintJson);
+        return new PsrMessageSerializer($this->headers, $this->prettyPrintJson);
     }
 
     public function serialize(MessageInterface $message): string

@@ -108,6 +108,70 @@ it('cannot make requests without mocks when renew is disallowed', function () {
 
 todo('can specify the filename resolution strategy');
 
+it('can serialize default headers', function () {
+    $mockFilePath = deletePreviousMock('840ef996fc9638ba15fc85317f923d3f.mock');
+
+    config()->set('http-automock.use_default_headers', true);
+    Http::automock();
+    Http::get('https://api.sampleapis.com/coffee/hot');
+    Http::assertSentCount(1);
+
+    expect(File::exists($mockFilePath))->toBeTrue("File at $mockFilePath must exist")
+        ->and(File::get($mockFilePath))
+        ->toContain('HTTP/1.1 200 OK')
+        ->toContain('Content-Type: application/json; charset=utf-8')
+        ->toContain('Content-Length: ')
+        ->not->toContain('Connection: ')
+        ->toContain('Access-Control-Allow-Origin: ')
+        ->toContain('Server: ');
+});
+
+it('can serialize specific headers', function () {
+    $mockFilePath = deletePreviousMock('840ef996fc9638ba15fc85317f923d3f.mock');
+
+    Http::automock()->withHeaders(['Content-Length']);
+    Http::get('https://api.sampleapis.com/coffee/hot');
+    Http::assertSentCount(1);
+
+    expect(File::exists($mockFilePath))->toBeTrue("File at $mockFilePath must exist")
+        ->and(File::get($mockFilePath))
+        ->toContain('HTTP/1.1 200 OK')
+        ->not->toContain('Content-Type: application/json; charset=utf-8')
+        ->toContain('Content-Length: ')
+        ->not->toContain('Connection: ')
+        ->not->toContain('Access-Control-Allow-Origin: ')
+        ->not->toContain('Server: ');
+});
+
+it('can serialize all headers', function () {
+    $mockFilePath = deletePreviousMock('840ef996fc9638ba15fc85317f923d3f.mock');
+
+    config()->set('http-automock.use_default_headers', false);
+    Http::automock();
+    Http::get('https://api.sampleapis.com/coffee/hot');
+    Http::assertSentCount(1);
+
+    expect(File::exists($mockFilePath))->toBeTrue("File at $mockFilePath must exist")
+        ->and(File::get($mockFilePath))->toStartWith("HTTP/1.1 200 OK\r\n\r\n");
+});
+
+it('will not serialize headers when not specified', function () {
+    $mockFilePath = deletePreviousMock('840ef996fc9638ba15fc85317f923d3f.mock');
+
+    Http::automock()->withHeaders(['Content-Length']);
+    Http::get('https://api.sampleapis.com/coffee/hot');
+    Http::assertSentCount(1);
+
+    expect(File::exists($mockFilePath))->toBeTrue("File at $mockFilePath must exist")
+        ->and(File::get($mockFilePath))
+        ->toContain('HTTP/1.1 200 OK')
+        ->not->toContain('Content-Type: application/json; charset=utf-8')
+        ->toContain('Content-Length: ')
+        ->not->toContain('Connection: ')
+        ->not->toContain('Access-Control-Allow-Origin: ')
+        ->not->toContain('Server: ');
+});
+
 it('can enable and disable pretty printing responses', function () {
     // Precondition
     $mockFilePath = mockFilePath('dbfa9a6776f62af138c73e2558e8f336.mock');
