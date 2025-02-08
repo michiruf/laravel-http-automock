@@ -68,6 +68,8 @@ return [
     |
     | Use this if you encounter a segmentation fault or a process signal 11.
     |
+    | Related issue: https://github.com/laravel/sail/issues/725
+    |
      */
     'xdebug_develop_mode_compat' => false,
 ];
