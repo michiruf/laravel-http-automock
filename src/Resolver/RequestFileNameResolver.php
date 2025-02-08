@@ -1,13 +1,20 @@
 <?php
 
-namespace HttpAutomock;
+namespace HttpAutomock\Resolver;
 
+use HttpAutomock\Serialization\MessageSerializerFactory;
 use Illuminate\Http\Client\Request;
 use RuntimeException;
 
 class RequestFileNameResolver implements RequestFileNameResolverInterface
 {
-    public int $count = 0;
+    public int $count;
+
+    public function __construct(
+        protected MessageSerializerFactory $messageSerializerFactory
+    ) {
+        $this->count = 0;
+    }
 
     public function resolve(string|callable|null $resolutionStrategy, Request $request, bool $forWriting): string
     {
@@ -41,6 +48,7 @@ class RequestFileNameResolver implements RequestFileNameResolverInterface
 
     protected function dataMd5(Request $request): string
     {
-        return md5(dd(json_encode($request)));
+        $content = $this->messageSerializerFactory->serialize($request->toPsrRequest());
+        return md5($content);
     }
 }

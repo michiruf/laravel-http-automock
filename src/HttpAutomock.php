@@ -3,6 +3,9 @@
 namespace HttpAutomock;
 
 use Closure;
+use GuzzleHttp\Promise\Create;
+use HttpAutomock\Resolver\RequestFileNameResolverInterface;
+use HttpAutomock\Serialization\MessageSerializerFactory;
 use Illuminate\Http\Client\Events\ResponseReceived;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\Request;
@@ -22,8 +25,9 @@ class HttpAutomock
 
     protected string|Closure|null $resolveFileNameStrategy = null;
 
-    /** @see static::renew() */
     protected ?bool $renew = null;
+
+    protected array|bool|null $headers = null;
 
     protected ?bool $jsonPrettyPrint = null;
 
@@ -34,7 +38,8 @@ class HttpAutomock
     protected array $filters = [];
 
     public function __construct(
-        protected RequestFileNameResolverInterface $fileNameResolver
+        protected RequestFileNameResolverInterface $fileNameResolver,
+        protected MessageSerializerFactory $messageSerializerFactory,
     ) {
     }
 
@@ -51,9 +56,11 @@ class HttpAutomock
         return $this;
     }
 
-    public function disable(): void
+    public function disable(): static
     {
         $this->enabled = false;
+
+        return $this;
     }
 
     protected function registerFakeHandler(): void
@@ -66,9 +73,10 @@ class HttpAutomock
             $filePath = $this->resolveFilePath($request, false);
 
             if (File::exists($filePath) && $this->renew !== true) {
-                $content = File::get($filePath);
+                $fileContent = File::get($filePath);
+                $response = $this->messageSerializerFactory->deserialize($fileContent);
 
-                return Http::response($content);
+                return Create::promiseFor($response);
             } elseif ($this->renew === false) {
                     throw new RuntimeException('Tried to send a request that has renewing disallowed');
             }
@@ -87,15 +95,26 @@ class HttpAutomock
             $filePath = $this->resolveFilePath($event->request, true);
 
             if (! File::exists($filePath) || $this->renew === true) {
-                $content = $event->response;
+                $jsonPrettyPrint = $this->jsonPrettyPrint !== null
+                    ? $this->jsonPrettyPrint
+                    : config('http-automock.json_prettyprint');
 
-                $jsonPrettyPrint = $this->jsonPrettyPrint !== null ? $this->jsonPrettyPrint : config('http-automock.json_prettyprint');
-                if ($jsonPrettyPrint && str($content->header('content-type'))->startsWith('application/json')) {
-                    $content = json_encode($content->json(), JSON_PRETTY_PRINT);
-                }
+                $headers = match ($this->headers) {
+                    null => config('http-automock.use_default_headers')
+                        ? config('http-automock.default_header_list')
+                        : [],
+                    false => [],
+                    true => ['*'],
+                    default => $this->headers,
+                };
+
+                $fileContent = $this->messageSerializerFactory
+                    ->withHeaders($headers)
+                    ->prettyPrintJson($jsonPrettyPrint)
+                    ->serialize($event->response->toPsrResponse());
 
                 File::ensureDirectoryExists(dirname($filePath));
-                File::put($filePath, $content);
+                File::put($filePath, $fileContent);
             }
         });
     }
@@ -160,6 +179,20 @@ class HttpAutomock
         $this->renew = $renew;
 
         return $this;
+    }
+
+    /**
+     * @param  array|bool|null  $headers  Headers to include in the mock file, null to reset to config value
+     */
+    public function withHeaders(array|bool|null $headers = true): static
+    {
+        $this->headers = $headers;
+
+        return $this;
+    }
+
+    public function withAllHeaders(): static {
+        return $this->withHeaders(['*']);
     }
 
     /**

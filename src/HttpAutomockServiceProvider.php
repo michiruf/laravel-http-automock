@@ -2,6 +2,8 @@
 
 namespace HttpAutomock;
 
+use HttpAutomock\Resolver\RequestFileNameResolver;
+use HttpAutomock\Resolver\RequestFileNameResolverInterface;
 use HttpAutomock\Support\HttpAutomockMixin;
 use Illuminate\Support\Facades\Http;
 use Spatie\LaravelPackageTools\Package;

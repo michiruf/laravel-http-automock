@@ -20,15 +20,29 @@ function mockFilePath(?string $filename = null): string
     return $directoryPath;
 }
 
+function deletePreviousMock(?string $filename = null): string
+{
+    if ($filename) {
+        $mockFilePath = mockFilePath($filename);
+        File::delete($mockFilePath);
+        expect(File::exists($mockFilePath))->toBeFalse("File at $mockFilePath must not exist");
+
+        return $mockFilePath;
+    } else {
+        $mockDirectory = mockFilePath();
+        File::deleteDirectory($mockDirectory);
+        expect(File::isDirectory($mockDirectory))->toBeFalse();
+
+        return $mockDirectory;
+    }
+}
+
 beforeEach(function () {
     config()->set('http-automock.filename_resolution_strategy', 'url_md5');
 });
 
 it('can automock requests', function () {
-    // Preconditions
-    $mockFilePath = mockFilePath('840ef996fc9638ba15fc85317f923d3f.mock');
-    File::delete($mockFilePath);
-    expect(File::exists($mockFilePath))->toBeFalse("File at $mockFilePath must not exist");
+    $mockFilePath = deletePreviousMock('840ef996fc9638ba15fc85317f923d3f.mock');
 
     Http::automock();
 
@@ -43,10 +57,7 @@ it('can automock requests', function () {
 });
 
 it('can mock when http fake is used #1', function () {
-    // Preconditions
-    $mockDirectory = mockFilePath();
-    File::deleteDirectory($mockDirectory);
-    expect(File::isDirectory($mockDirectory))->toBeFalse();
+    $mockDirectory = deletePreviousMock();
 
     // Fake and expect the response
     Http::preventStrayRequests();
@@ -56,15 +67,12 @@ it('can mock when http fake is used #1', function () {
     Http::automock();
     expect(Http::get('https://test')->body())->toBe('Hello');
 
-    // Precondition is configured properly
+    // Mock file path is configured properly
     expect(File::isDirectory($mockDirectory))->toBeTrue('Set up wrong directory in test');
 });
 
 it('can mock when http fake is used #2', function () {
-    // Preconditions
-    $mockDirectory = mockFilePath();
-    File::deleteDirectory($mockDirectory);
-    expect(File::isDirectory($mockDirectory))->toBeFalse();
+    $mockDirectory = deletePreviousMock();
 
     // Fake and expect the response
     Http::automock();
@@ -74,7 +82,7 @@ it('can mock when http fake is used #2', function () {
     ]);
     expect(Http::get('https://test')->body())->toBe('Hello');
 
-    // Precondition is configured properly
+    // Mock file path is configured properly
     expect(File::isDirectory($mockDirectory))->toBeTrue('Set up wrong directory in test');
 });
 
@@ -92,25 +100,83 @@ it('can force renew responses', function () {
 });
 
 it('cannot make requests without mocks when renew is disallowed', function () {
-    // Precondition
-    $mockDirectory = mockFilePath();
-    File::deleteDirectory($mockDirectory);
-    expect(File::isDirectory($mockDirectory))->toBeFalse();
+    $mockDirectory = deletePreviousMock();
 
     Http::automock()->renew(false);
     Http::get('https://api.sampleapis.com/coffee/hot');
 
-    // Precondition is configured properly
+    // Mock file path is configured properly
     expect(File::isDirectory($mockDirectory))->toBeTrue('Set up wrong directory in test');
 })->throws(RuntimeException::class, 'Tried to send a request that has renewing disallowed');
 
 todo('can specify filename resolution strategies');
 
+it('can serialize default headers', function () {
+    $mockFilePath = deletePreviousMock('840ef996fc9638ba15fc85317f923d3f.mock');
+
+    config()->set('http-automock.use_default_headers', true);
+    Http::automock();
+    Http::get('https://api.sampleapis.com/coffee/hot');
+    Http::assertSentCount(1);
+
+    expect(File::exists($mockFilePath))->toBeTrue("File at $mockFilePath must exist")
+        ->and(File::get($mockFilePath))
+        ->toContain('HTTP/1.1 200 OK')
+        ->toContain('Content-Type: application/json; charset=utf-8')
+        ->toContain('Content-Length: ')
+        ->not->toContain('Connection: ')
+        ->toContain('Access-Control-Allow-Origin: ')
+        ->toContain('Server: ');
+});
+
+it('can serialize specific headers', function () {
+    $mockFilePath = deletePreviousMock('840ef996fc9638ba15fc85317f923d3f.mock');
+
+    Http::automock()->withHeaders(['Content-Length']);
+    Http::get('https://api.sampleapis.com/coffee/hot');
+    Http::assertSentCount(1);
+
+    expect(File::exists($mockFilePath))->toBeTrue("File at $mockFilePath must exist")
+        ->and(File::get($mockFilePath))
+        ->toContain('HTTP/1.1 200 OK')
+        ->not->toContain('Content-Type: application/json; charset=utf-8')
+        ->toContain('Content-Length: ')
+        ->not->toContain('Connection: ')
+        ->not->toContain('Access-Control-Allow-Origin: ')
+        ->not->toContain('Server: ');
+});
+
+it('can serialize all headers', function () {
+    $mockFilePath = deletePreviousMock('840ef996fc9638ba15fc85317f923d3f.mock');
+
+    config()->set('http-automock.use_default_headers', false);
+    Http::automock();
+    Http::get('https://api.sampleapis.com/coffee/hot');
+    Http::assertSentCount(1);
+
+    expect(File::exists($mockFilePath))->toBeTrue("File at $mockFilePath must exist")
+        ->and(File::get($mockFilePath))->toStartWith("HTTP/1.1 200 OK\r\n\r\n");
+});
+
+it('will not serialize headers when not specified', function () {
+    $mockFilePath = deletePreviousMock('840ef996fc9638ba15fc85317f923d3f.mock');
+
+    Http::automock()->withHeaders(['Content-Length']);
+    Http::get('https://api.sampleapis.com/coffee/hot');
+    Http::assertSentCount(1);
+
+    expect(File::exists($mockFilePath))->toBeTrue("File at $mockFilePath must exist")
+        ->and(File::get($mockFilePath))
+        ->toContain('HTTP/1.1 200 OK')
+        ->not->toContain('Content-Type: application/json; charset=utf-8')
+        ->toContain('Content-Length: ')
+        ->not->toContain('Connection: ')
+        ->not->toContain('Access-Control-Allow-Origin: ')
+        ->not->toContain('Server: ');
+});
+
 it('can enable and disable pretty printing responses', function () {
-    // Precondition
-    $mockFilePath = mockFilePath('dbfa9a6776f62af138c73e2558e8f336.mock');
-    File::delete($mockFilePath);
-    expect(File::exists($mockFilePath))->toBeFalse("File at $mockFilePath must not exist");
+    $mockFilePath = deletePreviousMock('dbfa9a6776f62af138c73e2558e8f336.mock');
 
     Http::fake([
         'https://test' => Http::response('{"hello":"world"}', headers: ['Content-type' => 'application/json']),
@@ -118,20 +184,17 @@ it('can enable and disable pretty printing responses', function () {
 
     Http::automock()->jsonPrettyPrint(false);
     Http::get('https://test');
-    expect(File::get($mockFilePath))->toBe('{"hello":"world"}'); // also checks precondition
+    expect(File::get($mockFilePath))->toContain('{"hello":"world"}'); // also checks mock file path
 
-    File::delete($mockFilePath);
+    File::delete($mockFilePath); // TODO Avoid this and have both files with a count
 
     Http::automock()->jsonPrettyPrint();
     Http::get('https://test');
-    expect(File::get($mockFilePath))->toBe("{\n    \"hello\": \"world\"\n}"); // also checks precondition
+    expect(File::get($mockFilePath))->toContain("{\n    \"hello\": \"world\"\n}"); // also checks mock file path
 });
 
 it('can enable and disable skipping requests', function () {
-    // Precondition
-    $mockDirectory = mockFilePath();
-    File::deleteDirectory($mockDirectory);
-    expect(File::isDirectory($mockDirectory))->toBeFalse();
+    $mockDirectory = deletePreviousMock();
 
     Http::fake([
         'https://test' => Http::response('Hello'),
@@ -146,10 +209,7 @@ it('can enable and disable skipping requests', function () {
 });
 
 it('can skip all except get requests', function () {
-    // Precondition
-    $mockDirectory = mockFilePath();
-    File::deleteDirectory($mockDirectory);
-    expect(File::isDirectory($mockDirectory))->toBeFalse();
+    $mockDirectory = deletePreviousMock();
 
     Http::fake([
         'https://test' => Http::response('Hello'),
