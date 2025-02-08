@@ -50,7 +50,7 @@ class PsrMessageSerializer implements PsrMessageSerializerInterface
             return $message;
         }
 
-        $content = $message->getBody()->getContents();
+        $content = (string) $message->getBody();
 
         if (json_validate($content)) {
             $decoded = json_decode($content);

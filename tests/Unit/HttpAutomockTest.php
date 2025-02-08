@@ -186,7 +186,7 @@ it('can enable and disable pretty printing responses', function () {
     Http::get('https://test');
     expect(File::get($mockFilePath))->toContain('{"hello":"world"}'); // also checks mock file path
 
-    File::delete($mockFilePath);
+    File::delete($mockFilePath); // TODO Avoid this and have both files with a count
 
     Http::automock()->jsonPrettyPrint();
     Http::get('https://test');
