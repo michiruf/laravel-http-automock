@@ -8,13 +8,27 @@ class UrlFileNameResolver implements RequestFileNameResolverInterface
 {
     public function __construct(
         protected ?string $hashMethod = null,
+        protected ?bool $removeHttps = true,
+        protected ?bool $removeSlashes = true,
     ) {
     }
 
     public function resolve(Request $request, bool $forWriting): string
     {
         if (! $this->hashMethod) {
-            return str($request->url())->replace('/', '-')->value();
+            $url = str($request->url());
+
+            if ($this->removeHttps) {
+                $url = $url->replace('https://', '');
+            }
+
+            if ($this->removeSlashes) {
+                $url = $url->replace('/', '-');
+            }
+
+            $url = $url->replace(':', '-'); // always remove ':'
+
+            return $url->value();
         }
 
         return hash($this->hashMethod, $request->url());
