@@ -2,33 +2,50 @@
 
 [![Run Tests](https://github.com/michiruf/laravel-http-automock/actions/workflows/run-tests.yml/badge.svg)](https://github.com/michiruf/laravel-http-automock/actions/workflows/run-tests.yml)
 
+Laravel package for tests to automatically mock HTTP requests using laravels
+[HTTP client](https://laravel.com/docs/11.x/http-client) and [Pest](https://pestphp.com/).
+
 ## Prerequisites
 
-Pest!
-TODO
+This package currently only works using [Pest](https://pestphp.com/) and laravels
+[HTTP client](https://laravel.com/docs/11.x/http-client).
 
 ## Installation
 
-TODO
 ```shell
 composer require michiruf/laravel-http-automock
 ```
 
 Publish the config:
+
 ```shell
 php artisan vendor:publish --tag="http-automock-config"
 ```
 
+## Usage
+
+To enable auto mock, call `Http::automock();` inside your tests before executing the requests you want to send to
+save responses automatically and use them in the next tests runs.
+
+For further examples, please refer to [this test](./tests/Unit/ExampleUsageTest.php).
+
+```php
+it('can do stuff with the api', function () {
+    Http::automock();
+    $response = Http::get('https://api.sampleapis.com/coffee/hot')->json();
+    expect($response)->toHaveCount(20, 'There are not 20 hot coffees in the api service');
+});
+```
+
 ## Features that could get implemented
 
-* Skip specific responses, maybe by one of these approaches:
-  * `retryRequestsUntil` method
-  * `renewUntil` - Repeat renewing until the response contains sth.
-    e.g. a 429 error should get repeated
-* Clear all auto mocks invoking the test command with option `--prune`
-* Update all auto mocks invoking the test command with option `--update`
-* Mocks that should be reused for all test methods should be definable.
-  Use case: 
+* Skip or retry specific responses, e.g. when a 429 error or rate limits occur. Maybe by using one of these approaches:
+    * New `retryRequestsUntil` method
+    * New `renewUntil` - Repeat renewing until the response contains sth.
+* Clear all auto mocks invoking the test command with option `--prune` or `--prune-automocks`
+* Update all auto mocks invoking the test command with option `--update` or `--update-automocks`
+* Mocks that should be reused for all test methods should be definable. Maybe by specifying a scope for specific
+  requests?
 * Only automock requests that are a real request
   ```php
   // 'Real Request'
