@@ -24,7 +24,7 @@ php artisan vendor:publish --tag="http-automock-config"
 
 ## Usage
 
-To enable auto mock, call `Http::automock();` inside your tests before executing the requests you want to send to
+To enable automock, call `Http::automock();` inside your tests before executing the requests you want to send to
 save responses automatically and use them in the next tests runs.
 
 For further examples, please refer to [this test](./tests/Unit/ExampleUsageTest.php).
@@ -42,8 +42,8 @@ it('can do stuff with the api', function () {
 * Skip or retry specific responses, e.g. when a 429 error or rate limits occur. Maybe by using one of these approaches:
     * New `retryRequestsUntil` method
     * New `renewUntil` - Repeat renewing until the response contains sth.
-* Clear all auto mocks invoking the test command with option `--prune` or `--prune-automocks`
-* Update all auto mocks invoking the test command with option `--update` or `--update-automocks`
+* Clear all automocks invoking the test command with option `--prune` or `--prune-automocks`
+* Update all automocks invoking the test command with option `--update` or `--update-automocks`
 * Mocks that should be reused for all test methods should be definable. Maybe by specifying a scope for specific
   requests?
 * Only automock requests that are a real request
