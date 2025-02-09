@@ -3,9 +3,11 @@
 namespace HttpAutomock;
 
 use Closure;
+use Exception;
 use GuzzleHttp\Promise\Create;
 use HttpAutomock\Resolver\RequestFileNameResolverInterface;
 use HttpAutomock\Serialization\MessageSerializerFactory;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\Client\Events\ResponseReceived;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\Request;
@@ -23,7 +25,7 @@ class HttpAutomock
 
     protected bool $registered = false;
 
-    protected string|Closure|null $resolveFileNameStrategy = null;
+    protected ?array $fileNameResolvers = null;
 
     protected ?bool $renew = null;
 
@@ -38,7 +40,6 @@ class HttpAutomock
     protected array $filters = [];
 
     public function __construct(
-        protected RequestFileNameResolverInterface $fileNameResolver,
         protected MessageSerializerFactory $messageSerializerFactory,
     ) {
     }
@@ -78,7 +79,7 @@ class HttpAutomock
 
                 return Create::promiseFor($response);
             } elseif ($this->renew === false) {
-                    throw new RuntimeException('Tried to send a request that has renewing disallowed');
+                throw new RuntimeException('Tried to send a request that has renewing disallowed');
             }
 
             return null;
@@ -143,7 +144,39 @@ class HttpAutomock
 
     protected function resolveFileName(Request $request, bool $forWriting): string
     {
-        return $this->fileNameResolver->resolve($this->resolveFileNameStrategy, $request, $forWriting);
+        $resolvers = $this->fileNameResolvers ?? config('http-automock.filename_resolution_resolvers');
+
+        return collect($resolvers)
+            ->map(function ($args, $resolver) use ($forWriting, $request) {
+                // Swap resolver with args in case no args were given
+                if (is_numeric($resolver)) {
+                    $resolver = $args;
+                    $args = [];
+                }
+
+                if (is_callable($resolver)) {
+                    return $resolver($request, $forWriting);
+                }
+
+                if (class_exists($resolver)) {
+                    /**
+                     * Manually bind the scoped instance to not lose the resolver state on each filename resolution
+                     * @see static::resolveFileNameUsing()
+                     */
+                    if (! app()->resolved($resolver)) {
+                        $resolverInstance = app($resolver, $args);
+                        app()->scoped($resolver, fn (Application $app) => $resolverInstance);
+                    }
+                    $resolver = app($resolver, $args);
+                }
+
+                if (! $resolver instanceof RequestFileNameResolverInterface) {
+                    throw new Exception("Resolver is not a callable nor a ".RequestFileNameResolverInterface::class);
+                }
+
+                return $resolver->resolve($request, $forWriting);
+            })
+            ->join(config('http-automock.filename_resolution_delimiter'));
     }
 
     protected function requestFiltered(Request $request): bool
@@ -164,9 +197,27 @@ class HttpAutomock
         return false;
     }
 
-    public function resolveFileNameUsing(string|callable $strategy): static
+    public function resolveFileNameUsing(?array $resolvers): static
     {
-        $this->resolveFileNameStrategy = $strategy;
+        /**
+         * Forget all scoped file name resolvers to reset their state when using this function
+         * @see static::resolveFileName()
+         */
+        // Unfortunately, using `app()->forgetScopedInstances();` does not work, so we simple remove previous instances manually
+        // https://stackoverflow.com/questions/79424961/how-to-unset-scoped-instances-from-the-di-container-in-laravel
+        if ($this->fileNameResolvers) {
+            foreach ($this->fileNameResolvers as $key => $value) {
+                if (is_string($key) && class_exists($key)) {
+                    unset(app()[$key]);
+                }
+                if (is_string($value) && class_exists($value)) {
+                    unset(app()[$value]);
+                }
+            }
+        }
+        app()->forgetScopedInstances();
+
+        $this->fileNameResolvers = $resolvers;
 
         return $this;
     }
@@ -191,7 +242,8 @@ class HttpAutomock
         return $this;
     }
 
-    public function withAllHeaders(): static {
+    public function withAllHeaders(): static
+    {
         return $this->withHeaders(['*']);
     }
 
