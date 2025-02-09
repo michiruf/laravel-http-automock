@@ -11,20 +11,13 @@ TODO
 
 TODO
 ```shell
-composer require 
-
+composer require michiruf/laravel-http-automock
 ```
 
 Publish the config:
 ```shell
 php artisan vendor:publish --tag="http-automock-config"
 ```
-
-## TODOs
-
-Strategy:
-    'url_method_count' => filename: api.example.org__get__1
-                                 [url] [method] [count]
 
 ## Features that could get implemented
 

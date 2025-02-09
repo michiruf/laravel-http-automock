@@ -191,7 +191,8 @@ class HttpAutomock
         return $this;
     }
 
-    public function withAllHeaders(): static {
+    public function withAllHeaders(): static
+    {
         return $this->withHeaders(['*']);
     }
 
