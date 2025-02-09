@@ -5,8 +5,10 @@ use HttpAutomock\Resolver\DataFileNameResolver;
 use HttpAutomock\Resolver\MethodFileNameResolver;
 use HttpAutomock\Resolver\StaticStringFileNameResolver;
 use HttpAutomock\Resolver\UrlFileNameResolver;
-use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Http\Client\Events\ResponseReceived;
 use Illuminate\Http\Client\Request;
+use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Pest\TestSuite;
@@ -44,6 +46,11 @@ function deletePreviousMock(?string $filename = null): string
     }
 }
 
+function isRealResponse(Response $response): bool
+{
+    return ! empty($response->handlerStats());
+}
+
 beforeEach(function () {
     config()->set('http-automock.filename_resolution_resolvers', [
         UrlFileNameResolver::class => ['hashMethod' => 'md5'],
@@ -56,13 +63,19 @@ it('can automock requests', function () {
     Http::automock();
 
     // First call -> mock created
+    // For any reason, we get the handler stats only when getting the response via event
+    Event::listen(ResponseReceived::class, fn (ResponseReceived $event) => expect(isRealResponse($event->response))->toBeTrue());
     Http::get('https://api.sampleapis.com/coffee/hot');
     Http::assertSentCount(1);
     expect(File::exists($mockFilePath))->toBeTrue("File at $mockFilePath must exist");
+    Event::forget(ResponseReceived::class);
 
     // Second call -> not sent
+    Event::listen(ResponseReceived::class, fn (ResponseReceived $event) => expect(isRealResponse($event->response))->toBeFalse());
     Http::preventStrayRequests();
     Http::get('https://api.sampleapis.com/coffee/hot');
+    Http::assertSentCount(2);
+    Event::forget(ResponseReceived::class);
 });
 
 it('can mock when http fake is used #1', function () {
