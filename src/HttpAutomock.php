@@ -242,11 +242,6 @@ class HttpAutomock
         return $this;
     }
 
-    public function withAllHeaders(): static
-    {
-        return $this->withHeaders(['*']);
-    }
-
     /**
      * @param  bool|null  $prettyPrint  Pretty print json responses, null to reset to config value
      */

@@ -231,7 +231,7 @@ it('can serialize all headers', function () {
     $mockFilePath = deletePreviousMock('840ef996fc9638ba15fc85317f923d3f.mock');
 
     config()->set('http-automock.use_default_headers', false);
-    Http::automock()->withAllHeaders();
+    Http::automock()->withHeaders();
     Http::get('https://api.sampleapis.com/coffee/hot');
     Http::assertSentCount(1);
 
