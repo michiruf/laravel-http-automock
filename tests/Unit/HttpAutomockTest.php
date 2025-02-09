@@ -1,5 +1,12 @@
 <?php
 
+use HttpAutomock\Resolver\CountFileNameResolver;
+use HttpAutomock\Resolver\DataFileNameResolver;
+use HttpAutomock\Resolver\MethodFileNameResolver;
+use HttpAutomock\Resolver\StaticStringFileNameResolver;
+use HttpAutomock\Resolver\UrlFileNameResolver;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Pest\TestSuite;
@@ -38,7 +45,9 @@ function deletePreviousMock(?string $filename = null): string
 }
 
 beforeEach(function () {
-    config()->set('http-automock.filename_resolution_strategy', 'url_md5');
+    config()->set('http-automock.filename_resolution_resolvers', [
+        UrlFileNameResolver::class => ['hashMethod' => 'md5'],
+    ]);
 });
 
 it('can automock requests', function () {
@@ -103,7 +112,48 @@ it('cannot make requests without mocks when renew is disallowed', function () {
     expect(File::isDirectory($mockDirectory))->toBeTrue('Set up wrong directory in test');
 })->throws(RuntimeException::class, 'Tried to send a request that has renewing disallowed');
 
-todo('can specify filename resolution strategies');
+it('can specify filename resolution', function () {
+    Http::fake([
+        'https://test' => Http::response(),
+    ]);
+
+    // Specify explicitly for this instance
+    deletePreviousMock();
+    Http::automock()->resolveFileNameUsing([
+        CountFileNameResolver::class,
+        MethodFileNameResolver::class,
+    ]);
+    Http::get('https://test');
+    expect(File::exists(mockFilePath('1_GET.mock')))->toBeTrue();
+
+    // Specify defaults using the config and reset to using the config
+    deletePreviousMock();
+    config()->set('http-automock.filename_resolution_resolvers', [
+        StaticStringFileNameResolver::class => ['value' => 'TEST'],
+        CountFileNameResolver::class,
+        DataFileNameResolver::class => ['hashMethod' => 'md5'],
+    ]);
+    config()->set('http-automock.filename_resolution_delimiter', '-');
+    Http::automock()->resolveFileNameUsing(null);
+    Http::get('https://test');
+    expect(File::exists(mockFilePath('TEST-1-7d89cf2abf953badfcc7b35be06a0ebc.mock')))->toBeTrue();
+});
+
+it('can specify closure filename resolutions', function () {
+    Http::fake([
+        'https://test' => Http::response(),
+    ]);
+
+    deletePreviousMock();
+    Http::automock()->resolveFileNameUsing([
+        CountFileNameResolver::class,
+        function (Request $request, bool $forWriting) {
+            return $request->method();
+        },
+    ]);
+    Http::get('https://test');
+    expect(File::exists(mockFilePath('1_GET.mock')))->toBeTrue();
+});
 
 it('can serialize default headers', function () {
     $mockFilePath = deletePreviousMock('840ef996fc9638ba15fc85317f923d3f.mock');

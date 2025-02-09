@@ -26,12 +26,13 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Filename Resolution Strategy
+    | Filename Resolution
     |--------------------------------------------------------------------------
     |
     | The strategy used name your generated mocks within the context of one
     | test.
     |
+    // TODO
     | 'data_md5': Hashes the url and the payload and the header with md5.
     |             Multiple requests with the same data will only get executed
     |             Recommended in general.
@@ -43,7 +44,12 @@ return [
     |             Recommended for verbosity.
     |
     */
-    'filename_resolution_strategy' => 'count',
+    'filename_resolution_resolvers' => [
+        \HttpAutomock\Resolver\CountFileNameResolver::class,
+        \HttpAutomock\Resolver\MethodFileNameResolver::class,
+        \HttpAutomock\Resolver\UrlFileNameResolver::class => ['hashMethod' => 'md5'],
+    ],
+    'filename_resolution_delimiter' => '_',
 
     /*
     |--------------------------------------------------------------------------
