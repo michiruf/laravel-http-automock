@@ -15,17 +15,13 @@ it('can do stuff with the api', function () {
 });
 
 it('can specify file names via file resolver', function () {
-    Http::automock()->resolveFileNameUsing([
-        UrlFileNameResolver::class => ['removeSlashes' => false]
-    ]);
+    Http::automock()->resolveFileNameUsing(new UrlFileNameResolver(removeSlashes: false));
     Http::get('https://api.sampleapis.com/coffee/hot');
     expect(File::exists('tests/.pest/automock/Unit/ExampleUsageTest/it_can_specify_file_names_via_file_resolver/api.sampleapis.com/coffee/hot.mock'))->toBeTrue();
 });
 
 it('can specify file names via closure', function () {
-    Http::automock()->resolveFileNameUsing([
-        fn(Request $request, bool $forWriting) => "TEST-{$request->method()}"
-    ]);
+    Http::automock()->resolveFileNameUsing(fn(Request $request, bool $forWriting) => "TEST-{$request->method()}");
     Http::get('https://api.sampleapis.com/coffee/hot');
     expect(File::exists('tests/.pest/automock/Unit/ExampleUsageTest/it_can_specify_file_names_via_closure/TEST-GET.mock'))->toBeTrue();
 });

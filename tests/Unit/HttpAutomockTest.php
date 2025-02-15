@@ -1,9 +1,9 @@
 <?php
 
+use HttpAutomock\Resolver\CallableFileNameResolver;
 use HttpAutomock\Resolver\CountFileNameResolver;
-use HttpAutomock\Resolver\DataFileNameResolver;
 use HttpAutomock\Resolver\MethodFileNameResolver;
-use HttpAutomock\Resolver\StaticStringFileNameResolver;
+use HttpAutomock\Resolver\StackFileNameResolver;
 use HttpAutomock\Resolver\UrlFileNameResolver;
 use Illuminate\Http\Client\Events\ResponseReceived;
 use Illuminate\Http\Client\Request;
@@ -52,9 +52,22 @@ function isRealResponse(Response $response): bool
 }
 
 beforeEach(function () {
-    config()->set('http-automock.filename_resolution_resolvers', [
-        UrlFileNameResolver::class => ['hashMethod' => 'md5'],
+    config()->set('http-automock.filename_resolvers', [
+        'stack' => [
+            'resolver' => StackFileNameResolver::class,
+            'filenameResolvers' => [
+                '*' => ['count', 'http_method', 'url_md5']
+            ],
+            'delimiter' => '_',
+        ],
+        'count' => CountFileNameResolver::class,
+        'http_method' => MethodFileNameResolver::class,
+        'url_md5' => [
+            'resolver' => UrlFileNameResolver::class,
+            'hashMethod' => 'md5',
+        ],
     ]);
+    config()->set('http-automock.default_filename_resolver', 'url_md5');
 });
 
 it('can automock requests', function () {
@@ -132,24 +145,36 @@ it('can specify filename resolution', function () {
 
     // Specify explicitly for this instance
     deletePreviousMock();
-    Http::automock()->resolveFileNameUsing([
-        CountFileNameResolver::class,
-        MethodFileNameResolver::class,
-    ]);
+    Http::automock()->resolveFileNameUsingResolverAndArgs(CountFileNameResolver::class);
     Http::get('https://test');
-    expect(File::exists(mockFilePath('1_GET.mock')))->toBeTrue();
+    expect(File::exists(mockFilePath('1.mock')))->toBeTrue();
+
+    // Specify resolver from the config
+    deletePreviousMock();
+    Http::automock()->resolveFileNameUsing('stack');
+    Http::get('https://test');
+    expect(File::exists(mockFilePath('1_GET_dbfa9a6776f62af138c73e2558e8f336.mock')))->toBeTrue();
 
     // Specify defaults using the config and reset to using the config
     deletePreviousMock();
-    config()->set('http-automock.filename_resolution_resolvers', [
-        StaticStringFileNameResolver::class => ['value' => 'TEST'],
-        CountFileNameResolver::class,
-        DataFileNameResolver::class => ['hashMethod' => 'md5'],
+    config()->set('http-automock.filename_resolvers', [
+        'custom' => [
+            'resolver' => StackFileNameResolver::class,
+            'filenameResolvers' => [
+                '*' => [
+                    'count',
+                    fn (Request $request) => $request->method(),
+                    new CallableFileNameResolver(fn ($request, $forWriting, $directory) => 'TEST')
+                ]
+            ],
+            'delimiter' => '_',
+        ],
+        'count' => CountFileNameResolver::class,
     ]);
-    config()->set('http-automock.filename_resolution_delimiter', '-');
+    config()->set('http-automock.default_filename_resolver', 'custom');
     Http::automock()->resolveFileNameUsing(null);
     Http::get('https://test');
-    expect(File::exists(mockFilePath('TEST-1-7d89cf2abf953badfcc7b35be06a0ebc.mock')))->toBeTrue();
+    expect(File::exists(mockFilePath('1_GET_TEST.mock')))->toBeTrue();
 });
 
 it('can specify closure filename resolutions', function () {
@@ -158,14 +183,11 @@ it('can specify closure filename resolutions', function () {
     ]);
 
     deletePreviousMock();
-    Http::automock()->resolveFileNameUsing([
-        CountFileNameResolver::class,
-        function (Request $request, bool $forWriting) {
-            return $request->method();
-        },
-    ]);
+    Http::automock()->resolveFileNameUsing(function (Request $request, bool $forWriting) {
+        return $request->method();
+    });
     Http::get('https://test');
-    expect(File::exists(mockFilePath('1_GET.mock')))->toBeTrue();
+    expect(File::exists(mockFilePath('GET.mock')))->toBeTrue();
 });
 
 it('can serialize default headers', function () {
@@ -267,7 +289,7 @@ it('can enable and disable pretty printing responses', function () {
         'https://test' => Http::response('{"hello":"world"}', headers: ['Content-type' => 'application/json']),
     ]);
     Http::automock()
-        ->resolveFileNameUsing([CountFileNameResolver::class])
+        ->resolveFileNameUsingResolverAndArgs(CountFileNameResolver::class)
         ->renew();
 
     Http::automock()->jsonPrettyPrint(false);
