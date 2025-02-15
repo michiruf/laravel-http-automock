@@ -13,7 +13,7 @@ class UrlFileNameResolver implements RequestFileNameResolverInterface
     ) {
     }
 
-    public function resolve(Request $request, bool $forWriting): string
+    public function resolve(Request $request, bool $forWriting, string $directory): string
     {
         if (! $this->hashMethod) {
             $url = str($request->url());

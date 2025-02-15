@@ -11,7 +11,7 @@ class StaticStringFileNameResolver implements RequestFileNameResolverInterface
     ) {
     }
 
-    public function resolve(Request $request, bool $forWriting): string
+    public function resolve(Request $request, bool $forWriting, string $directory): string
     {
         return $this->value;
     }

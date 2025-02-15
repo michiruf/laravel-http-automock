@@ -13,7 +13,7 @@ class DataFileNameResolver implements RequestFileNameResolverInterface
     ) {
     }
 
-    public function resolve(Request $request, bool $forWriting): string
+    public function resolve(Request $request, bool $forWriting, string $directory): string
     {
         $content = $this->messageSerializerFactory->serialize($request->toPsrRequest());
 

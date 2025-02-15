@@ -8,7 +8,7 @@ class CountFileNameResolver implements RequestFileNameResolverInterface
 {
     public int $count = 1;
 
-    function resolve(Request $request, bool $forWriting): string
+    function resolve(Request $request, bool $forWriting, string $directory): string
     {
         return $forWriting
             ? $this->count++
