@@ -24,48 +24,75 @@ return [
     */
     'extension' => '.mock',
 
-    /*
-    |--------------------------------------------------------------------------
-    | Filename Resolution
-    |--------------------------------------------------------------------------
-    |
-    | Configure how filenames for automocks should get generated.
-    |
-    | 'filename_resolution_resolvers' configures the resolvers used to generate
-    | a file name for an automock file depending on the request data.
-    |
-    | 'filename_resolution_delimiter' configures how the resolvers should get
-    | put together to build a file name.
-    |
-    | Packaged options 'filename_resolution_resolvers':
-    |
-    | * \HttpAutomock\Resolver\CountFileNameResolver::class
-    |   | Uses an increasing integer to name the files. Multiple
-    |   | requests in one test will get executed multiple times.
-    |
-    | * \HttpAutomock\Resolver\DataFileNameResolver::class => ['hashMethod' => 'sha256']
-    |   | Hashes all request data (url, payload and header) with the given hash
-    |   | method. Multiple requests with the same data will only get executed
-    |   | once.
-    |
-    | * \HttpAutomock\Resolver\MethodFileNameResolver::class
-    |   | Returns the requests http method.
-    |
-    | * \HttpAutomock\Resolver\StaticStringFileNameResolver::class => ['value' => 'static_string'],
-    |   | Returns the specified string value. Useful to add scopes to a
-    |   | requests file name if multiple scopes are needed in a test.
-    |
-    | * \HttpAutomock\Resolver\UrlFileNameResolver::class => ['hashMethod' => 'md5']
-    |   | Hashes the url of the request with the given hash method. Multiple
-    |   | requests with the same url will only get executed once.
-    |
-    */
-    'filename_resolution_resolvers' => [
-        \HttpAutomock\Resolver\CountFileNameResolver::class,
-        \HttpAutomock\Resolver\MethodFileNameResolver::class,
-        \HttpAutomock\Resolver\UrlFileNameResolver::class => ['hashMethod' => 'md5'],
+    ///*
+    //|--------------------------------------------------------------------------
+    //| Filename Resolution
+    //|--------------------------------------------------------------------------
+    //|
+    //| Configure how filenames for automocks should get generated.
+    //|
+    //| 'filename_resolution_resolvers' configures the resolvers used to generate
+    //| a file name for an automock file depending on the request data.
+    //|
+    //| 'filename_resolution_delimiter' configures how the resolvers should get
+    //| put together to build a file name.
+    //|
+    //| Packaged options 'filename_resolution_resolvers':
+    //|
+    //| * \HttpAutomock\Resolver\CountFileNameResolver::class
+    //|   | Uses an increasing integer to name the files. Multiple
+    //|   | requests in one test will get executed multiple times.
+    //|
+    //| * \HttpAutomock\Resolver\DataFileNameResolver::class => ['hashMethod' => 'sha256']
+    //|   | Hashes all request data (url, payload and header) with the given hash
+    //|   | method. Multiple requests with the same data will only get executed
+    //|   | once.
+    //|
+    //| * \HttpAutomock\Resolver\MethodFileNameResolver::class
+    //|   | Returns the requests http method.
+    //|
+    //| * \HttpAutomock\Resolver\StaticStringFileNameResolver::class => ['value' => 'static_string'],
+    //|   | Returns the specified string value. Useful to add scopes to a
+    //|   | requests file name if multiple scopes are needed in a test.
+    //|
+    //| * \HttpAutomock\Resolver\UrlFileNameResolver::class => ['hashMethod' => 'md5']
+    //|   | Hashes the url of the request with the given hash method. Multiple
+    //|   | requests with the same url will only get executed once.
+    //|
+    //*/
+    //'filename_resolution_resolvers' => [
+    //    \HttpAutomock\Resolver\CountFileNameResolver::class,
+    //    \HttpAutomock\Resolver\MethodFileNameResolver::class,
+    //    \HttpAutomock\Resolver\UrlFileNameResolver::class => ['hashMethod' => 'md5'],
+    //],
+    //'filename_resolution_delimiter' => '_',
+
+    // TODO Document this
+
+    'default_filename_resolver' => 'stack',
+    'filename_resolvers' => [
+
+        'stack' => [
+            'resolver' => \HttpAutomock\Resolver\StackFileNameResolver::class,
+            'filenameResolvers' => [
+                '*' => ['count', 'http_method', 'url']
+            ],
+            'delimiter' => '_',
+        ],
+
+        'count' => \HttpAutomock\Resolver\CountFileNameResolver::class,
+
+        'http_method' => \HttpAutomock\Resolver\MethodFileNameResolver::class,
+
+        'url' => [
+            'resolver' => \HttpAutomock\Resolver\UrlFileNameResolver::class,
+            'removeHttps' => true,
+            'removeSlashes' => true,
+            'hashMethod' => 'md5', // TODO 'xxh32'
+            'hashSubstr' => null,
+        ],
+
     ],
-    'filename_resolution_delimiter' => '_',
 
     /*
     |--------------------------------------------------------------------------
