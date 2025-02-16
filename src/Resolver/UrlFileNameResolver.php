@@ -19,7 +19,8 @@ class UrlFileNameResolver implements RequestFileNameResolverInterface
             $url = str($request->url());
 
             if ($this->removeHttps) {
-                $url = $url->replace('https://', '');
+                // TODO Separate this
+                $url = $url->replace('https://', '')->replace('http://', '');
             }
 
             if ($this->removeSlashes) {
