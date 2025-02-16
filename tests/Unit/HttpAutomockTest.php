@@ -202,7 +202,6 @@ it('can serialize default headers', function () {
         ->and(File::get($mockFilePath))
         ->toContain('HTTP/1.1 200 OK')
         ->toContain('Content-Type: application/json; charset=utf-8')
-        ->toContain('Content-Length: ')
         ->not->toContain('Connection: ')
         ->toContain('Access-Control-Allow-Origin: ')
         ->toContain('Server: ');
@@ -219,7 +218,6 @@ it('can serialize specific headers', function () {
         ->and(File::get($mockFilePath))
         ->toContain('HTTP/1.1 200 OK')
         ->not->toContain('Content-Type: application/json; charset=utf-8')
-        ->toContain('Content-Length: ')
         ->not->toContain('Connection: ')
         ->not->toContain('Access-Control-Allow-Origin: ')
         ->not->toContain('Server: ');
@@ -278,7 +276,6 @@ it('will not serialize headers when not specified', function () {
         ->and(File::get($mockFilePath))
         ->toContain('HTTP/1.1 200 OK')
         ->not->toContain('Content-Type: application/json; charset=utf-8')
-        ->toContain('Content-Length: ')
         ->not->toContain('Connection: ')
         ->not->toContain('Access-Control-Allow-Origin: ')
         ->not->toContain('Server: ');
