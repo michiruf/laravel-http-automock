@@ -8,7 +8,7 @@ uses(TestCase::class)->in(__DIR__);
 uses(RefreshDatabase::class)->in(__DIR__.'/Unit');
 
 // We want to start the test server once and shut it down after all tests
-// Unfortunately, there might be no option to do this with packaged hook
+// Unfortunately, there might be no option to do this with packaged hooks
 function startOnce(): void
 {
     // To ensure this is only done once using a static variable, the function must
