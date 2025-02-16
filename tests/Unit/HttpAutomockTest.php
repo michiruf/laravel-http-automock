@@ -71,14 +71,14 @@ beforeEach(function () {
 });
 
 it('can automock requests', function () {
-    $mockFilePath = deletePreviousMock('840ef996fc9638ba15fc85317f923d3f.mock');
+    $mockFilePath = deletePreviousMock('b50e3de4f046e52a54288dba34e7b10a.mock');
 
     Http::automock();
 
     // First call -> mock created
     // For any reason, we get the handler stats only when getting the response via event
     Event::listen(ResponseReceived::class, fn (ResponseReceived $event) => expect(isRealResponse($event->response))->toBeTrue());
-    Http::get('https://api.sampleapis.com/coffee/hot');
+    Http::get('http://localhost:9337/coffee/hot');
     Http::assertSentCount(1);
     expect(File::exists($mockFilePath))->toBeTrue("File at $mockFilePath must exist");
     Event::forget(ResponseReceived::class);
@@ -86,7 +86,7 @@ it('can automock requests', function () {
     // Second call -> not sent
     Event::listen(ResponseReceived::class, fn (ResponseReceived $event) => expect(isRealResponse($event->response))->toBeFalse());
     Http::preventStrayRequests();
-    Http::get('https://api.sampleapis.com/coffee/hot');
+    Http::get('http://localhost:9337/coffee/hot');
     Http::assertSentCount(2);
     Event::forget(ResponseReceived::class);
 });
@@ -132,7 +132,7 @@ it('cannot make requests without mocks when renew is disallowed', function () {
     $mockDirectory = deletePreviousMock();
 
     Http::automock()->renew(false);
-    Http::get('https://api.sampleapis.com/coffee/hot');
+    Http::get('http://localhost:9337/coffee/hot');
 
     // Mock file path is configured properly
     expect(File::isDirectory($mockDirectory))->toBeTrue('Set up wrong directory in test');
@@ -191,11 +191,11 @@ it('can specify closure filename resolutions', function () {
 });
 
 it('can serialize default headers', function () {
-    $mockFilePath = deletePreviousMock('840ef996fc9638ba15fc85317f923d3f.mock');
+    $mockFilePath = deletePreviousMock('b50e3de4f046e52a54288dba34e7b10a.mock');
 
     config()->set('http-automock.use_default_headers', true);
     Http::automock();
-    Http::get('https://api.sampleapis.com/coffee/hot');
+    Http::get('http://localhost:9337/coffee/hot');
     Http::assertSentCount(1);
 
     expect(File::exists($mockFilePath))->toBeTrue("File at $mockFilePath must exist")
@@ -209,10 +209,10 @@ it('can serialize default headers', function () {
 });
 
 it('can serialize specific headers', function () {
-    $mockFilePath = deletePreviousMock('840ef996fc9638ba15fc85317f923d3f.mock');
+    $mockFilePath = deletePreviousMock('b50e3de4f046e52a54288dba34e7b10a.mock');
 
     Http::automock()->withHeaders(['Content-Length']);
-    Http::get('https://api.sampleapis.com/coffee/hot');
+    Http::get('http://localhost:9337/coffee/hot');
     Http::assertSentCount(1);
 
     expect(File::exists($mockFilePath))->toBeTrue("File at $mockFilePath must exist")
@@ -247,14 +247,14 @@ it('can serialize all headers', function () {
         'server-timing' => 'cfL4;desc="?proto=TCP&rtt=135730&min_rtt=135550&rtt_var=50960&sent=4&recv=5&lost=0&retrans=0&sent_bytes=2847&recv_bytes=699&delivery_rate=21423&cwnd=58&unsent_bytes=0&cid=081659bd52451ddd&ts=249&x=0"',
     ];
     Http::fake([
-        'https://api.sampleapis.com/coffee/hot' => Http::response('Hello', 201, $headers)
+        'http://localhost:9337/coffee/hot' => Http::response('Hello', 201, $headers)
     ]);
 
-    $mockFilePath = deletePreviousMock('840ef996fc9638ba15fc85317f923d3f.mock');
+    $mockFilePath = deletePreviousMock('b50e3de4f046e52a54288dba34e7b10a.mock');
 
     config()->set('http-automock.use_default_headers', false);
     Http::automock()->withHeaders();
-    Http::get('https://api.sampleapis.com/coffee/hot');
+    Http::get('http://localhost:9337/coffee/hot');
     Http::assertSentCount(1);
 
     $mockContent = collect($headers)
@@ -268,10 +268,10 @@ it('can serialize all headers', function () {
 });
 
 it('will not serialize headers when not specified', function () {
-    $mockFilePath = deletePreviousMock('840ef996fc9638ba15fc85317f923d3f.mock');
+    $mockFilePath = deletePreviousMock('b50e3de4f046e52a54288dba34e7b10a.mock');
 
     Http::automock()->withHeaders(['Content-Length']);
-    Http::get('https://api.sampleapis.com/coffee/hot');
+    Http::get('http://localhost:9337/coffee/hot');
     Http::assertSentCount(1);
 
     expect(File::exists($mockFilePath))->toBeTrue("File at $mockFilePath must exist")
