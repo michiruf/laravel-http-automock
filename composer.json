@@ -20,6 +20,7 @@
         "orchestra/testbench": "^9.0.0||^8.22.0",
         "pestphp/pest": "^3.0",
         "pestphp/pest-plugin-laravel": "^3.0",
+        "slim/slim": "^4.14",
         "spatie/laravel-ray": "^1.35"
     },
     "autoload": {
