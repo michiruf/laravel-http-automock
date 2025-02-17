@@ -3,14 +3,23 @@
 namespace HttpAutomock\Resolver;
 
 use Exception;
+use Http;
 use HttpAutomock\Service\HttpAutomockFileNameResolver;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
+/**
+ * Resolves filenames by combining multiple resolvers in a stack.
+ *
+ * This resolver takes an array of filename resolvers and combines their results
+ * based on URL patterns. It matches the request URL against configured patterns
+ * and applies the corresponding stack of resolvers to generate the final filename.
+ */
 class StackFileNameResolver implements RequestFileNameResolverInterface
 {
     /**
-     * @param  array<string, array<class-string>>  $filenameResolvers
+     * @param  array<string, array<string>&array<class-string>>  $filenameResolvers
      */
     public function __construct(
         protected array $filenameResolvers,
@@ -22,7 +31,7 @@ class StackFileNameResolver implements RequestFileNameResolverInterface
     function resolve(Request $request, bool $forWriting, string $directory): string
     {
         // Receive the first set of resolvers that do match the url
-        $stackResolvers = Arr::first($this->filenameResolvers, fn ($resolvers, $url) => str($request->url())->is($url));
+        $stackResolvers = Arr::first($this->filenameResolvers, fn ($resolvers, $url) => Str::is(Str::start($url, '*'), $request->url()));
 
         if (! $stackResolvers) {
             throw new Exception("No stack resolver matches the url for this request: {$request->url()}");

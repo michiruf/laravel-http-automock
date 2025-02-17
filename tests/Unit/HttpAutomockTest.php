@@ -2,7 +2,7 @@
 
 use HttpAutomock\Resolver\CallableFileNameResolver;
 use HttpAutomock\Resolver\CountFileNameResolver;
-use HttpAutomock\Resolver\MethodFileNameResolver;
+use HttpAutomock\Resolver\HttpMethodFileNameResolver;
 use HttpAutomock\Resolver\StackFileNameResolver;
 use HttpAutomock\Resolver\UrlFileNameResolver;
 use Illuminate\Http\Client\Events\ResponseReceived;
@@ -61,7 +61,7 @@ beforeEach(function () {
             'delimiter' => '_',
         ],
         'count' => CountFileNameResolver::class,
-        'http_method' => MethodFileNameResolver::class,
+        'http_method' => HttpMethodFileNameResolver::class,
         'url_md5' => [
             'resolver' => UrlFileNameResolver::class,
             'hashMethod' => 'md5',

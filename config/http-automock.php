@@ -56,7 +56,7 @@ return [
 
         'count' => \HttpAutomock\Resolver\CountFileNameResolver::class,
 
-        'http_method' => \HttpAutomock\Resolver\MethodFileNameResolver::class,
+        'http_method' => \HttpAutomock\Resolver\HttpMethodFileNameResolver::class,
 
         'url_hash' => [
             'resolver' => \HttpAutomock\Resolver\UrlFileNameResolver::class,
