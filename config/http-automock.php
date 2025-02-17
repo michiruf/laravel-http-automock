@@ -24,58 +24,32 @@ return [
     */
     'extension' => '.mock',
 
-    ///*
-    //|--------------------------------------------------------------------------
-    //| Filename Resolution
-    //|--------------------------------------------------------------------------
-    //|
-    //| Configure how filenames for automocks should get generated.
-    //|
-    //| 'filename_resolution_resolvers' configures the resolvers used to generate
-    //| a file name for an automock file depending on the request data.
-    //|
-    //| 'filename_resolution_delimiter' configures how the resolvers should get
-    //| put together to build a file name.
-    //|
-    //| Packaged options 'filename_resolution_resolvers':
-    //|
-    //| * \HttpAutomock\Resolver\CountFileNameResolver::class
-    //|   | Uses an increasing integer to name the files. Multiple
-    //|   | requests in one test will get executed multiple times.
-    //|
-    //| * \HttpAutomock\Resolver\DataFileNameResolver::class => ['hashMethod' => 'sha256']
-    //|   | Hashes all request data (url, payload and header) with the given hash
-    //|   | method. Multiple requests with the same data will only get executed
-    //|   | once.
-    //|
-    //| * \HttpAutomock\Resolver\MethodFileNameResolver::class
-    //|   | Returns the requests http method.
-    //|
-    //| * \HttpAutomock\Resolver\StaticStringFileNameResolver::class => ['value' => 'static_string'],
-    //|   | Returns the specified string value. Useful to add scopes to a
-    //|   | requests file name if multiple scopes are needed in a test.
-    //|
-    //| * \HttpAutomock\Resolver\UrlFileNameResolver::class => ['hashMethod' => 'md5']
-    //|   | Hashes the url of the request with the given hash method. Multiple
-    //|   | requests with the same url will only get executed once.
-    //|
-    //*/
-    //'filename_resolution_resolvers' => [
-    //    \HttpAutomock\Resolver\CountFileNameResolver::class,
-    //    \HttpAutomock\Resolver\MethodFileNameResolver::class,
-    //    \HttpAutomock\Resolver\UrlFileNameResolver::class => ['hashMethod' => 'md5'],
-    //],
-    //'filename_resolution_delimiter' => '_',
-
-    // TODO Document this
-
+    /*
+    |--------------------------------------------------------------------------
+    | Filename Resolution
+    |--------------------------------------------------------------------------
+    |
+    | Configure how filenames for automocks should get generated.
+    |
+    | 'default_filename_resolver' configures the resolver to be used when no
+    | other resolver is specified via `Http::automock()->resolveFileNameUsing`
+    | or `Http::automock()->resolveFileNameUsingResolverAndArgs`.
+    |
+    | 'filename_resolvers' configures a list of available resolvers and their
+    | parameters. Therefore, the values specified inside a resolver, get passed
+    | to the resolver as arguments when instantiating. The key 'resolver'
+    | specifies the class itself.
+    | Inside these resolvers, additional dependencies can get resolved from the
+    | container without further configuration.
+    |
+    */
     'default_filename_resolver' => 'stack',
     'filename_resolvers' => [
 
         'stack' => [
             'resolver' => \HttpAutomock\Resolver\StackFileNameResolver::class,
             'filenameResolvers' => [
-                '*' => ['count', 'http_method', 'url']
+                '*' => ['count', 'http_method', 'url_hash']
             ],
             'delimiter' => '_',
         ],
@@ -84,13 +58,15 @@ return [
 
         'http_method' => \HttpAutomock\Resolver\MethodFileNameResolver::class,
 
-        'url' => [
+        'url_hash' => [
             'resolver' => \HttpAutomock\Resolver\UrlFileNameResolver::class,
-            'removeHttps' => true,
-            'removeSlashes' => true,
-            'hashMethod' => 'md5', // TODO 'xxh32'
-            'hashSubstr' => null,
+            'hashMethod' => 'xxh32',
         ],
+
+        'data_hash' => [
+            'resolver' => \HttpAutomock\Resolver\DataFileNameResolver::class,
+            'hashMethod' => 'xxh32',
+        ]
 
     ],
 
