@@ -2,10 +2,10 @@
 
 namespace HttpAutomock\Resolver;
 
-use Arr;
 use Exception;
 use HttpAutomock\Service\HttpAutomockFileNameResolver;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Arr;
 
 class StackFileNameResolver implements RequestFileNameResolverInterface
 {
