@@ -11,13 +11,13 @@ it('can do stuff with the api', function () {
     Http::automock();
     $response = Http::get('http://localhost:9337/coffee/hot')->json();
     expect($response)->toHaveCount(20, 'There are not 20 hot coffees in the api service')
-        ->and(File::exists('tests/.pest/automock/Unit/ExampleUsageTest/it_can_do_stuff_with_the_api/1_GET_b50e3de4f046e52a54288dba34e7b10a.mock'))->toBeTrue();
+        ->and(File::exists('tests/.pest/automock/Unit/ExampleUsageTest/it_can_do_stuff_with_the_api/1_GET_4c147242.mock'))->toBeTrue();
 });
 
 it('can specify file names via file resolver', function () {
-    Http::automock()->resolveFileNameUsing(new RequestUrlResolver(removeHttps:true, removeSlashes: false));
+    Http::automock()->resolveFileNameUsing(new RequestUrlResolver(port: false, removeSlashes: false));
     Http::get('http://localhost:9337/coffee/hot');
-    expect(File::exists('tests/.pest/automock/Unit/ExampleUsageTest/it_can_specify_file_names_via_file_resolver/localhost-9337/coffee/hot.mock'))->toBeTrue();
+    expect(File::exists('tests/.pest/automock/Unit/ExampleUsageTest/it_can_specify_file_names_via_file_resolver/localhost/coffee/hot.mock'))->toBeTrue();
 });
 
 it('can specify file names via closure', function () {
@@ -29,27 +29,27 @@ it('can specify file names via closure', function () {
 it('can persist some headers', function () {
     Http::automock()->withHeaders(['Server']);
     Http::get('http://localhost:9337/coffee/hot');
-    expect(File::exists('tests/.pest/automock/Unit/ExampleUsageTest/it_can_persist_some_headers/1_GET_b50e3de4f046e52a54288dba34e7b10a.mock'))->toBeTrue();
+    expect(File::exists('tests/.pest/automock/Unit/ExampleUsageTest/it_can_persist_some_headers/1_GET_4c147242.mock'))->toBeTrue();
 });
 
 it('can persist default headers', function () {
     config()->set('http-automock.use_default_headers', true);
     Http::automock();
     Http::get('http://localhost:9337/coffee/hot');
-    expect(File::exists('tests/.pest/automock/Unit/ExampleUsageTest/it_can_persist_default_headers/1_GET_b50e3de4f046e52a54288dba34e7b10a.mock'))->toBeTrue();
+    expect(File::exists('tests/.pest/automock/Unit/ExampleUsageTest/it_can_persist_default_headers/1_GET_4c147242.mock'))->toBeTrue();
 });
 
 it('can persist all headers', function () {
     Http::automock()->withHeaders();
     Http::get('http://localhost:9337/coffee/hot');
-    expect(File::exists('tests/.pest/automock/Unit/ExampleUsageTest/it_can_persist_all_headers/1_GET_b50e3de4f046e52a54288dba34e7b10a.mock'))->toBeTrue();
+    expect(File::exists('tests/.pest/automock/Unit/ExampleUsageTest/it_can_persist_all_headers/1_GET_4c147242.mock'))->toBeTrue();
 });
 
 it('can force renew responses', function () {
     $now = now();
     Http::automock()->renew();
     Http::get('http://localhost:9337/coffee/hot');
-    $path = 'tests/.pest/automock/Unit/ExampleUsageTest/it_can_force_renew_responses/1_GET_b50e3de4f046e52a54288dba34e7b10a.mock';
+    $path = 'tests/.pest/automock/Unit/ExampleUsageTest/it_can_force_renew_responses/1_GET_4c147242.mock';
     expect(File::exists($path))->toBeTrue()
         ->and(File::lastModified($path))->toBeGreaterThanOrEqual($now->getTimestamp());
 });
@@ -75,5 +75,5 @@ it('is possible to set the extension via config', function () {
     config()->set('http-automock.extension', '.json');
     Http::automock();
     Http::get('http://localhost:9337/coffee/hot');
-    expect(File::exists('tests/.pest/automock/Unit/ExampleUsageTest/it_is_possible_to_set_the_extension_via_config/1_GET_b50e3de4f046e52a54288dba34e7b10a.json'))->toBeTrue();
+    expect(File::exists('tests/.pest/automock/Unit/ExampleUsageTest/it_is_possible_to_set_the_extension_via_config/1_GET_4c147242.json'))->toBeTrue();
 });

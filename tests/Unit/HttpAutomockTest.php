@@ -64,14 +64,14 @@ beforeEach(function () {
         'http_method' => RequestMethodResolver::class,
         'url_md5' => [
             'resolver' => RequestUrlResolver::class,
-            'hashMethod' => 'md5',
+            'hashMethod' => 'xxh32',
         ],
     ]);
     config()->set('http-automock.default_filename_resolver', 'url_md5');
 });
 
 it('can automock requests', function () {
-    $mockFilePath = deletePreviousMock('b50e3de4f046e52a54288dba34e7b10a.mock');
+    $mockFilePath = deletePreviousMock('4c147242.mock');
 
     Http::automock();
 
@@ -153,7 +153,7 @@ it('can specify filename resolution', function () {
     deletePreviousMock();
     Http::automock()->resolveFileNameUsing('stack');
     Http::get('https://test');
-    expect(File::exists(mockFilePath('1_GET_dbfa9a6776f62af138c73e2558e8f336.mock')))->toBeTrue();
+    expect(File::exists(mockFilePath('1_GET_6dd00367.mock')))->toBeTrue();
 
     // Specify defaults using the config and reset to using the config
     deletePreviousMock();
@@ -191,7 +191,7 @@ it('can specify closure filename resolutions', function () {
 });
 
 it('can serialize default headers', function () {
-    $mockFilePath = deletePreviousMock('b50e3de4f046e52a54288dba34e7b10a.mock');
+    $mockFilePath = deletePreviousMock('4c147242.mock');
 
     config()->set('http-automock.use_default_headers', true);
     Http::automock();
@@ -208,7 +208,7 @@ it('can serialize default headers', function () {
 });
 
 it('can serialize specific headers', function () {
-    $mockFilePath = deletePreviousMock('b50e3de4f046e52a54288dba34e7b10a.mock');
+    $mockFilePath = deletePreviousMock('4c147242.mock');
 
     Http::automock()->withHeaders(['Content-Length']);
     Http::get('http://localhost:9337/coffee/hot');
@@ -248,7 +248,7 @@ it('can serialize all headers', function () {
         'http://localhost:9337/coffee/hot' => Http::response('Hello', 201, $headers)
     ]);
 
-    $mockFilePath = deletePreviousMock('b50e3de4f046e52a54288dba34e7b10a.mock');
+    $mockFilePath = deletePreviousMock('4c147242.mock');
 
     config()->set('http-automock.use_default_headers', false);
     Http::automock()->withHeaders();
@@ -266,7 +266,7 @@ it('can serialize all headers', function () {
 });
 
 it('will not serialize headers when not specified', function () {
-    $mockFilePath = deletePreviousMock('b50e3de4f046e52a54288dba34e7b10a.mock');
+    $mockFilePath = deletePreviousMock('4c147242.mock');
 
     Http::automock()->withHeaders(['Content-Length']);
     Http::get('http://localhost:9337/coffee/hot');
