@@ -93,7 +93,7 @@ class RequestUrlResolver implements FileNameResolverInterface
         }
 
         foreach ($this->customTransformations as $callback) {
-            $url = $callback($url);
+            $url = str($callback($url));
         }
 
         if ($this->sanitizeForFileSystems) {
