@@ -52,22 +52,7 @@ function isRealResponse(Response $response): bool
 }
 
 beforeEach(function () {
-    config()->set('http-automock.filename_resolvers', [
-        'stack' => [
-            'resolver' => StackResolver::class,
-            'filenameResolvers' => [
-                '*' => ['count', 'http_method', 'url_md5']
-            ],
-            'delimiter' => '_',
-        ],
-        'count' => CountResolver::class,
-        'http_method' => RequestMethodResolver::class,
-        'url_md5' => [
-            'resolver' => RequestUrlResolver::class,
-            'hashMethod' => 'xxh32',
-        ],
-    ]);
-    config()->set('http-automock.default_filename_resolver', 'url_md5');
+    Http::configureAutomock()->resolveFileNameUsing('url_hash');
 });
 
 it('can automock requests', function () {
