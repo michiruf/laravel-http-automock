@@ -64,7 +64,7 @@ return [
         ],
 
         'data_hash' => [
-            'resolver' => \HttpAutomock\Resolver\RequestDataResolver::class,
+            'resolver' => \HttpAutomock\Resolver\RequestResolver::class,
             'hashMethod' => 'xxh32',
         ]
 

@@ -21,7 +21,7 @@ use Illuminate\Http\Client\Request;
  * - Individual control over which request components to include
  * - Component-specific options via separate resolvers
  */
-class RequestDataResolver implements FileNameResolverInterface
+class RequestResolver implements FileNameResolverInterface
 {
     public function __construct(
         protected MessageSerializerFactory $messageSerializerFactory,
