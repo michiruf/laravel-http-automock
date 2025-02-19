@@ -2,44 +2,40 @@
 
 namespace HttpAutomock\Resolver;
 
+use HttpAutomock\Resolver\Helper\FileNameSanitizer;
 use HttpAutomock\Serialization\MessageSerializerFactory;
 use HttpAutomock\Service\HttpAutomockFileNameResolver;
 use Illuminate\Http\Client\Request;
 
 /**
- * Generates a filename by hashing request data with configurable components.
+ * Resolves a unique filename based on HTTP request data.
  *
- * This resolver creates unique filenames based on request data, allowing selective
- * inclusion/exclusion of different request components (headers, query parameters,
- * body, etc.) when generating the hash.
+ * This resolver can generate filenames based on either:
+ * 1. A complete serialized request message
+ * 2. A combination of request components (URL, method, headers, body)
  *
  * Features:
- * - Selective request component inclusion/exclusion
- * - Optional header filtering
- * - Configurable hash algorithm
- * - Adjustable output length
- * - Custom data transformations
- *
- * Example usage:
- * A POST request with headers and payload might generate:
- * - Hash of all data: "a7d8e9f..."
- * - Hash of body only: "b2c3d4e..."
- * - Hash of specific headers and query: "c5d6e7f..."
+ * - Optional file system sanitization
+ * - Configurable hashing of the output
+ * - Substring limiting of the final filename
+ * - Individual control over which request components to include
+ * - Component-specific options via separate resolvers
  */
 class RequestDataResolver implements FileNameResolverInterface
 {
-    /**
-     * @param  string[]  $includedHeaders
-     * @param  string[]  $excludedHeaders
-     */
     public function __construct(
         protected MessageSerializerFactory $messageSerializerFactory,
+        protected HttpAutomockFileNameResolver $httpAutomockFileNameResolver,
         protected bool $serializeCompleteMessage = true,
-        protected bool $includeMethod = true,
-        protected bool $includeUrl = true,
-        protected array $includedHeaders = [],
-        protected array $excludedHeaders = ['Authorization', 'Cookie'],
-        protected bool $includeBody = true,
+        protected bool $url = true,
+        protected array $urlOptions = [],
+        protected bool $method = true,
+        protected array $methodOptions = [],
+        protected bool $header = true,
+        protected array $headerOptions = [],
+        protected bool $body = true,
+        protected array $bodyOptions = [],
+        protected bool $sanitizeForFileSystems = true,
         protected ?string $hashMethod = null,
         protected ?int $substring = null,
     ) {
@@ -47,58 +43,57 @@ class RequestDataResolver implements FileNameResolverInterface
 
     public function resolve(Request $request, bool $forWriting, string $directory): string
     {
-        $content = str($this->serializeCompleteMessage
+        $data = str($this->serializeCompleteMessage
             ? $this->messageSerializerFactory->serialize($request->toPsrRequest())
-            : $this->partiallySerialize($request));
+            : $this->partiallySerialize($request, $forWriting, $directory));
+
+        if ($this->sanitizeForFileSystems) {
+            $data = FileNameSanitizer::sanitize($data);
+        }
 
         if ($this->hashMethod) {
-            $content = str(hash($this->hashMethod, $content->value()));
+            $data = str(hash($this->hashMethod, $data->value()));
         }
 
         if ($this->substring) {
-            $content = $content->substr(0, $this->substring);
+            $data = $data->substr(0, $this->substring);
         }
 
-        return $content->value();
+        return $data->value();
     }
 
-    protected function partiallySerialize(Request $request): string
+    protected function partiallySerialize(Request $request, bool $forWriting, string $directory): string
     {
-        $psrRequest = $request->toPsrRequest();
         $components = [];
 
-        if ($this->includeMethod) {
-            $components['method'] = $request->method();
+        if ($this->url) {
+            $components['url'] = $this->httpAutomockFileNameResolver->resolve([
+                'resolver' => RequestUrlResolver::class,
+                ...$this->urlOptions,
+            ], $request, $forWriting, $directory);
         }
 
-        if ($this->includeUrl) {
-            $components['url'] = $request->url();
+        if ($this->method) {
+            $components['method'] = $this->httpAutomockFileNameResolver->resolve([
+                'resolver' => RequestMethodResolver::class,
+                ...$this->methodOptions,
+            ], $request, $forWriting, $directory);
         }
 
-        foreach ($psrRequest->getHeaders() as $name => $values) {
-            if ($this->shouldIncludeHeader($name)) {
-                $components['headers'][$name] = $values;
-            }
+        if ($this->header) {
+            $components['method'] = $this->httpAutomockFileNameResolver->resolve([
+                'resolver' => RequestHeaderResolver::class,
+                ...$this->headerOptions,
+            ], $request, $forWriting, $directory);
         }
 
-        if ($this->includeBody) {
-            $body = $psrRequest->getBody()->getContents();
-            if (! empty($body)) {
-                $components['body'] = $body;
-            }
+        if ($this->body) {
+            $components['method'] = $this->httpAutomockFileNameResolver->resolve([
+                'resolver' => RequestBodyResolver::class,
+                ...$this->bodyOptions,
+            ], $request, $forWriting, $directory);
         }
 
         return json_encode($components);
-    }
-
-    protected function shouldIncludeHeader(string $headerName): bool
-    {
-        $headerName = strtolower($headerName);
-
-        if (! empty($this->includedHeaders)) {
-            return in_array($headerName, array_map('strtolower', $this->includedHeaders));
-        }
-
-        return ! in_array($headerName, array_map('strtolower', $this->excludedHeaders));
     }
 }

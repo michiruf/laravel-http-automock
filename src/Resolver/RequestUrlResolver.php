@@ -3,6 +3,7 @@
 namespace HttpAutomock\Resolver;
 
 use GuzzleHttp\Psr7\Uri;
+use HttpAutomock\Resolver\Helper\FileNameSanitizer;
 use Illuminate\Http\Client\Request;
 
 /**
@@ -33,17 +34,17 @@ class RequestUrlResolver implements FileNameResolverInterface
      * @param  array<callable(string): string>  $customTransformations
      */
     public function __construct(
-        protected bool $removeScheme = true,
-        protected bool $removeUserInfo = true,
+        protected bool $scheme = false,
+        protected bool $userInfo = false,
+        protected bool $host = true,
+        protected bool $port = true,
+        protected bool $path = true,
+        protected bool $query = false,
+        protected bool $fragment = false,
         protected bool $sanitizeUserInfo = true,
-        protected bool $removeHost = false,
         protected bool $removeSubdomainFromHost = false,
-        protected bool $removePort = false,
-        protected bool $removePath = false,
-        protected bool $removeQuery = false,
-        protected bool $removeFragment = false,
         protected bool $removeSlashes = false,
-        protected bool $sanitizeUrlForFileSystems = true,
+        protected bool $sanitizeForFileSystems = true,
         protected array $customReplace = [],
         protected array $customTransformations = [],
         protected ?string $hashMethod = null,
@@ -57,37 +58,33 @@ class RequestUrlResolver implements FileNameResolverInterface
 
         $authority = str();
 
-        if (! $this->removeUserInfo && ! empty($uri->getUserInfo())) {
+        if ($this->userInfo && ! empty($uri->getUserInfo())) {
             $userInfo = $this->sanitizeUserInfo
                 ? str($uri->getUserInfo())->beforeLast(':')->value()
                 : $uri->getUserInfo();
             $authority = $authority->append($userInfo)->append('@');
         }
 
-        if (! $this->removeHost && empty($uri->getHost())) {
+        if ($this->host && empty($uri->getHost())) {
             $authority = $authority->append($this->removeSubdomainFromHost
                 ? static::removeSubdomainFromHost($uri->getHost())
                 : $uri->getHost());
         }
 
-        if (! $this->removePort && $uri->getPort()) {
+        if ($this->port && $uri->getPort()) {
             $authority = $authority->append(':')->append($uri->getPort());
         }
 
         $url = str(Uri::composeComponents(
-            $this->removeScheme ? null : $uri->getScheme(),
+            $this->scheme ? $uri->getScheme() : null,
             $authority?->value() ?: null,
-            $this->removePath ? null : $uri->getPath(),
-            $this->removeQuery ? null : $uri->getQuery(),
-            $this->removeFragment ? null : $uri->getFragment(),
+            $this->path ? $uri->getPath() : null,
+            $this->query ? $uri->getQuery() : null,
+            $this->fragment ? $uri->getFragment() : null,
         ));
 
         if ($this->removeSlashes) {
             $url = $url->remove('/');
-        }
-
-        if ($this->sanitizeUrlForFileSystems) {
-            $url = $url->replace([':', '?', '*', '"', '<', '>', '|'], '-');
         }
 
         foreach ($this->customReplace as $search => $replace) {
@@ -96,6 +93,10 @@ class RequestUrlResolver implements FileNameResolverInterface
 
         foreach ($this->customTransformations as $callback) {
             $url = $callback($url);
+        }
+
+        if ($this->sanitizeForFileSystems) {
+            $url = FileNameSanitizer::sanitize($url);
         }
 
         if ($this->hashMethod) {
