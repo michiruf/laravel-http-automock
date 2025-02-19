@@ -10,8 +10,13 @@ use Illuminate\Http\Client\Request;
  *
  * This resolver allows for custom file name resolution logic to be provided
  * via a closure, providing flexibility in how request data is mapped to file names.
+ *
+ * Note: The class is suffixed with resolver intentionally to avoid collisions
+ * with the internal name callable for developers.
+ *
+ * @internal
  */
-class CallableFileNameResolver implements RequestFileNameResolverInterface
+class Resolver implements FileNameResolverInterface
 {
     public function __construct(
         protected Closure $callable

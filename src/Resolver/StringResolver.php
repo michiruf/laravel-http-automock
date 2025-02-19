@@ -9,7 +9,7 @@ use Illuminate\Http\Client\Request;
  *
  * This resolver is useful when you need to add scopes to a set of requests in a test.
  */
-class StaticStringFileNameResolver implements RequestFileNameResolverInterface
+class StringResolver implements FileNameResolverInterface
 {
     public function __construct(
         protected string $value,

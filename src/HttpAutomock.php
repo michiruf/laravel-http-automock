@@ -4,7 +4,7 @@ namespace HttpAutomock;
 
 use Closure;
 use GuzzleHttp\Promise\Create;
-use HttpAutomock\Resolver\RequestFileNameResolverInterface;
+use HttpAutomock\Resolver\FileNameResolverInterface;
 use HttpAutomock\Serialization\MessageSerializerFactory;
 use HttpAutomock\Service\HttpAutomockFileNameResolver;
 use Illuminate\Http\Client\Events\ResponseReceived;
@@ -24,7 +24,7 @@ class HttpAutomock
 
     protected bool $registered = false;
 
-    protected string|Closure|array|RequestFileNameResolverInterface|null $fileNameResolver = null;
+    protected string|Closure|array|FileNameResolverInterface|null $fileNameResolver = null;
 
     protected ?bool $renew = null;
 
@@ -163,7 +163,7 @@ class HttpAutomock
         return false;
     }
 
-    public function resolveFileNameUsing(string|Closure|RequestFileNameResolverInterface|null $resolver): static
+    public function resolveFileNameUsing(string|Closure|FileNameResolverInterface|null $resolver): static
     {
         $this->httpAutomockFileNameResolver->forgetPreviousInstances();
         $this->fileNameResolver = $resolver;

@@ -47,24 +47,24 @@ return [
     'filename_resolvers' => [
 
         'stack' => [
-            'resolver' => \HttpAutomock\Resolver\StackFileNameResolver::class,
+            'resolver' => \HttpAutomock\Resolver\StackResolver::class,
             'filenameResolvers' => [
                 '*' => ['count', 'http_method', 'url_hash']
             ],
             'delimiter' => '_',
         ],
 
-        'count' => \HttpAutomock\Resolver\CountFileNameResolver::class,
+        'count' => \HttpAutomock\Resolver\CountResolver::class,
 
-        'http_method' => \HttpAutomock\Resolver\HttpMethodFileNameResolver::class,
+        'http_method' => \HttpAutomock\Resolver\RequestMethodResolver::class,
 
         'url_hash' => [
-            'resolver' => \HttpAutomock\Resolver\UrlFileNameResolver::class,
+            'resolver' => \HttpAutomock\Resolver\RequestUrlResolver::class,
             'hashMethod' => 'xxh32',
         ],
 
         'data_hash' => [
-            'resolver' => \HttpAutomock\Resolver\DataFileNameResolver::class,
+            'resolver' => \HttpAutomock\Resolver\RequestDataResolver::class,
             'hashMethod' => 'xxh32',
         ]
 

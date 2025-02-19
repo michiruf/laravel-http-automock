@@ -3,6 +3,7 @@
 namespace HttpAutomock\Resolver;
 
 use HttpAutomock\Serialization\MessageSerializerFactory;
+use HttpAutomock\Service\HttpAutomockFileNameResolver;
 use Illuminate\Http\Client\Request;
 
 /**
@@ -25,7 +26,7 @@ use Illuminate\Http\Client\Request;
  * - Hash of body only: "b2c3d4e..."
  * - Hash of specific headers and query: "c5d6e7f..."
  */
-class DataFileNameResolver implements RequestFileNameResolverInterface
+class RequestDataResolver implements FileNameResolverInterface
 {
     /**
      * @param  string[]  $includedHeaders

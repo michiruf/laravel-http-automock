@@ -11,7 +11,7 @@ use Illuminate\Http\Client\Request;
  * For example, a GET request will result in a file named "GET" or "get"
  * depending on the lowercase setting.
  */
-class HttpMethodFileNameResolver implements RequestFileNameResolverInterface
+class RequestMethodResolver implements FileNameResolverInterface
 {
     public function __construct(
         protected bool $lowercase = false,

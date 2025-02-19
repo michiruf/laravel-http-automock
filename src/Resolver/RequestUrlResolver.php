@@ -26,7 +26,7 @@ use Illuminate\Http\Client\Request;
  * - "example-com-users-id-123" (with subdomain removal)
  * - "a7d8e9f..." (with hashing enabled)
  */
-class UrlFileNameResolver implements RequestFileNameResolverInterface
+class RequestUrlResolver implements FileNameResolverInterface
 {
     /**
      * @param  array<string, string>  $customReplace

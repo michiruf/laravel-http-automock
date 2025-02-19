@@ -18,7 +18,7 @@ use Illuminate\Http\Client\Request;
  * Note: The counter only increments when writing files (forWriting = true).
  * When reading files, it returns the current counter value without incrementing.
  */
-class CountFileNameResolver implements RequestFileNameResolverInterface
+class CountResolver implements FileNameResolverInterface
 {
     public function __construct(
         public int $count = 1,

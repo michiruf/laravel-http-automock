@@ -4,7 +4,7 @@ namespace HttpAutomock\Resolver;
 
 use Illuminate\Http\Client\Request;
 
-interface RequestFileNameResolverInterface
+interface FileNameResolverInterface
 {
     /**
      * @param  Request  $request  The request used to resolve the filename

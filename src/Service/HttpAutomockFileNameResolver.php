@@ -2,8 +2,8 @@
 
 namespace HttpAutomock\Service;
 
-use HttpAutomock\Resolver\CallableFileNameResolver;
-use HttpAutomock\Resolver\RequestFileNameResolverInterface;
+use HttpAutomock\Resolver\Resolver;
+use HttpAutomock\Resolver\FileNameResolverInterface;
 use Illuminate\Config\Repository;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Foundation\Application;
@@ -20,18 +20,18 @@ class HttpAutomockFileNameResolver
     ) {
     }
 
-    public function resolve(string|array|callable|RequestFileNameResolverInterface $resolver, Request $request, bool $forWriting, string $directory): string
+    public function resolve(string|array|callable|FileNameResolverInterface $resolver, Request $request, bool $forWriting, string $directory): string
     {
         $resolverInstance = match (true) {
             is_string($resolver) && ! $this->isResolverClass($resolver) => $this->resolveConfigResolver($resolver),
             is_string($resolver) && $this->isResolverClass($resolver) => $this->resolveClassResolver($resolver, []),
             is_array($resolver) => $this->resolveArgsResolver($resolver),
             is_callable($resolver) => $this->resolveCallableResolver($resolver),
-            $resolver instanceof RequestFileNameResolverInterface => $resolver,
+            $resolver instanceof FileNameResolverInterface => $resolver,
             default => null,
         };
 
-        if (! $resolverInstance instanceof RequestFileNameResolverInterface) {
+        if (! $resolverInstance instanceof FileNameResolverInterface) {
             throw new RuntimeException("Resolver '$resolver' not found");
         }
 
@@ -40,10 +40,10 @@ class HttpAutomockFileNameResolver
 
     protected function isResolverClass(string $resolver): bool
     {
-        return is_a($resolver, RequestFileNameResolverInterface::class, true);
+        return is_a($resolver, FileNameResolverInterface::class, true);
     }
 
-    protected function resolveConfigResolver(string $resolver): ?RequestFileNameResolverInterface
+    protected function resolveConfigResolver(string $resolver): ?FileNameResolverInterface
     {
         $args = $this->config->get("http-automock.filename_resolvers.$resolver");
 
@@ -58,7 +58,7 @@ class HttpAutomockFileNameResolver
         return $this->resolveArgsResolver($args);
     }
 
-    protected function resolveArgsResolver(array $args): ?RequestFileNameResolverInterface
+    protected function resolveArgsResolver(array $args): ?FileNameResolverInterface
     {
         $resolverClass = $args['resolver'] ?? null;
 
@@ -73,7 +73,7 @@ class HttpAutomockFileNameResolver
      * @param  class-string  $class
      * @see static::forgetPreviousInstances() on how isntances get cleared
      */
-    protected function resolveClassResolver(string $class, array $args): RequestFileNameResolverInterface
+    protected function resolveClassResolver(string $class, array $args): FileNameResolverInterface
     {
         // Manually bind the scoped instance to not lose the resolver state on each filename resolution
         if (! $this->container->resolved($class)) {
@@ -84,8 +84,8 @@ class HttpAutomockFileNameResolver
 
         $resolverInstance = $this->container->make($class, $args);
 
-        if (! $resolverInstance instanceof RequestFileNameResolverInterface) {
-            throw new RuntimeException("Class resolver does not implement ".RequestFileNameResolverInterface::class);
+        if (! $resolverInstance instanceof FileNameResolverInterface) {
+            throw new RuntimeException("Class resolver does not implement ".FileNameResolverInterface::class);
         }
 
         return $resolverInstance;
@@ -94,9 +94,9 @@ class HttpAutomockFileNameResolver
     /**
      * @param  callable<Request, bool, string>  $resolver
      */
-    protected function resolveCallableResolver(callable $resolver): RequestFileNameResolverInterface
+    protected function resolveCallableResolver(callable $resolver): FileNameResolverInterface
     {
-        return new CallableFileNameResolver($resolver);
+        return new Resolver($resolver);
     }
 
     /**

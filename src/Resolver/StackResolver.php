@@ -3,7 +3,6 @@
 namespace HttpAutomock\Resolver;
 
 use Exception;
-use Http;
 use HttpAutomock\Service\HttpAutomockFileNameResolver;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Arr;
@@ -16,7 +15,7 @@ use Illuminate\Support\Str;
  * based on URL patterns. It matches the request URL against configured patterns
  * and applies the corresponding stack of resolvers to generate the final filename.
  */
-class StackFileNameResolver implements RequestFileNameResolverInterface
+class StackResolver implements FileNameResolverInterface
 {
     /**
      * @param  array<string, array<string>&array<class-string>>  $filenameResolvers

@@ -1,6 +1,6 @@
 <?php
 
-use HttpAutomock\Resolver\UrlFileNameResolver;
+use HttpAutomock\Resolver\RequestUrlResolver;
 use Illuminate\Http\Client\Request;
 
 /**
@@ -15,7 +15,7 @@ it('can do stuff with the api', function () {
 });
 
 it('can specify file names via file resolver', function () {
-    Http::automock()->resolveFileNameUsing(new UrlFileNameResolver(removeHttps:true, removeSlashes: false));
+    Http::automock()->resolveFileNameUsing(new RequestUrlResolver(removeHttps:true, removeSlashes: false));
     Http::get('http://localhost:9337/coffee/hot');
     expect(File::exists('tests/.pest/automock/Unit/ExampleUsageTest/it_can_specify_file_names_via_file_resolver/localhost-9337/coffee/hot.mock'))->toBeTrue();
 });
