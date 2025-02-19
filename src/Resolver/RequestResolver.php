@@ -81,14 +81,14 @@ class RequestResolver implements FileNameResolverInterface
         }
 
         if ($this->header) {
-            $components['method'] = $this->httpAutomockFileNameResolver->resolve([
+            $components['header'] = $this->httpAutomockFileNameResolver->resolve([
                 'resolver' => RequestHeaderResolver::class,
                 ...$this->headerOptions,
             ], $request, $forWriting, $directory);
         }
 
         if ($this->body) {
-            $components['method'] = $this->httpAutomockFileNameResolver->resolve([
+            $components['body'] = $this->httpAutomockFileNameResolver->resolve([
                 'resolver' => RequestBodyResolver::class,
                 ...$this->bodyOptions,
             ], $request, $forWriting, $directory);
