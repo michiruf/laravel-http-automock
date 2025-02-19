@@ -2,7 +2,7 @@
 
 namespace HttpAutomock\Resolver;
 
-use HttpAutomock\Resolver\Helper\FileNameSanitizer;
+use HttpAutomock\Helper\FileNameSanitizer;
 use HttpAutomock\Serialization\MessageSerializerFactory;
 use HttpAutomock\Service\HttpAutomockFileNameResolver;
 use Illuminate\Http\Client\Request;

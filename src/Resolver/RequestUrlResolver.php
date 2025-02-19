@@ -3,7 +3,7 @@
 namespace HttpAutomock\Resolver;
 
 use GuzzleHttp\Psr7\Uri;
-use HttpAutomock\Resolver\Helper\FileNameSanitizer;
+use HttpAutomock\Helper\FileNameSanitizer;
 use Illuminate\Http\Client\Request;
 
 /**

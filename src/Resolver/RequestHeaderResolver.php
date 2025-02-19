@@ -2,7 +2,7 @@
 
 namespace HttpAutomock\Resolver;
 
-use HttpAutomock\Resolver\Helper\FileNameSanitizer;
+use HttpAutomock\Helper\FileNameSanitizer;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Arr;
 

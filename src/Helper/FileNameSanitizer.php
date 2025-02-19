@@ -1,6 +1,6 @@
 <?php
 
-namespace HttpAutomock\Resolver\Helper;
+namespace HttpAutomock\Helper;
 
 use Illuminate\Support\Stringable;
 
