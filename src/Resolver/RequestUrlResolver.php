@@ -39,8 +39,8 @@ class RequestUrlResolver implements FileNameResolverInterface
         protected bool $host = true,
         protected bool $port = true,
         protected bool $path = true,
-        protected bool $query = false,
-        protected bool $fragment = false,
+        protected bool $query = true,
+        protected bool $fragment = true,
         protected bool $sanitizeUserInfo = true,
         protected bool $removeSubdomainFromHost = false,
         protected bool $removeSlashes = false,
@@ -56,7 +56,7 @@ class RequestUrlResolver implements FileNameResolverInterface
     {
         $uri = $request->toPsrRequest()->getUri();
 
-        $authority = str();
+        $authority = str('');
 
         if ($this->userInfo && ! empty($uri->getUserInfo())) {
             $userInfo = $this->sanitizeUserInfo
@@ -65,13 +65,14 @@ class RequestUrlResolver implements FileNameResolverInterface
             $authority = $authority->append($userInfo)->append('@');
         }
 
-        if ($this->host && empty($uri->getHost())) {
+        if ($this->host && ! empty($uri->getHost())) {
             $authority = $authority->append($this->removeSubdomainFromHost
                 ? static::removeSubdomainFromHost($uri->getHost())
                 : $uri->getHost());
         }
 
-        if ($this->port && $uri->getPort()) {
+        // Since the default port may be returned by getPort(), we omit this
+        if ($this->port && $uri->getPort() !== null && $uri->getPort() !== 80) {
             $authority = $authority->append(':')->append($uri->getPort());
         }
 

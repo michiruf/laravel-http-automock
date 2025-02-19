@@ -8,8 +8,6 @@ class FileNameSanitizer
 {
     public static function sanitize(string|Stringable $value, string $with = '-'): string|Stringable
     {
-        str();
-
         static $replace = [':', '?', '*', '"', '<', '>', '|', '\r', '\n', '\t'];
         return $value instanceof Stringable
             ? $value->replace($replace, $with)
