@@ -98,7 +98,7 @@ it('can mock when http fake is used #2', function () {
         ->and(File::isDirectory($mockDirectory))->toBeTrue('Set up wrong directory in test');
 });
 
-it('can force renew responses', function () {
+it('can renew responses', function () {
     Http::automock()->renew();
     Http::fake([
         'https://test' => Http::sequence([
@@ -111,17 +111,41 @@ it('can force renew responses', function () {
         ->and(Http::get('https://test')->body())->toBe('There');
 });
 
-it('cannot make requests without mocks when renew is disallowed', function () {
-    $mockDirectory = deletePreviousMock();
+it('can prevent real requests', function () {
+    deletePreviousMock();
 
     Http::automock()->preventRealRequests();
     Http::get('http://localhost:9337/coffee/hot');
-
-    // Mock file path is configured properly
-    expect(File::isDirectory($mockDirectory))->toBeTrue('Set up wrong directory in test');
 })->throws(RuntimeException::class, 'Tried to send a real request that was prevented');
 
-todo('can make requests when renewing and requests except renewing are disallowed');
+it('can prevent unknown real requests', function () {
+    deletePreviousMock();
+
+    Http::automock()->preventUnknownRealRequests();
+    Http::get('http://localhost:9337/coffee/hot');
+})->throws(RuntimeException::class, 'Tried to send an unknown real request that was prevented');
+
+it('can renew known requests', function () {
+    $path = deletePreviousMock('4c147242.mock');
+    File::ensureDirectoryExists(dirname($path));
+    File::put($path, '');
+
+    Http::automock()
+        ->preventUnknownRealRequests()
+        ->renew();
+    Http::get('http://localhost:9337/coffee/hot');
+
+    expect(File::get($path))->not->toBeEmpty();
+});
+
+it('cannot renew unknown requests', function() {
+    deletePreviousMock();
+
+    Http::automock()
+        ->preventUnknownRealRequests()
+        ->renew();
+    Http::get('http://localhost:9337/coffee/hot');
+})->throws(RuntimeException::class, 'Tried to send an unknown real request that was prevented');
 
 it('can specify filename resolution', function () {
     Http::fake([
