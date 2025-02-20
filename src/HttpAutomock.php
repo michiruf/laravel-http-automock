@@ -20,37 +20,18 @@ use RuntimeException;
 
 class HttpAutomock
 {
-    protected bool $enabled = false;
-
     protected bool $registered = false;
 
-    protected string|Closure|array|FileNameResolverInterface|null $fileNameResolver = null;
-
-    protected bool $preventRealRequests = false;
-
-    protected bool $preventUnknownRealRequests = false;
-
-    protected bool $renew = false;
-
-    protected array|bool|null $headers = null;
-
-    protected ?bool $jsonPrettyPrint = null;
-
-    /** @var String[] */
-    protected array $urlFilters = [];
-
-    /** @var Closure<Request, bool>[] */
-    protected array $filters = [];
-
     public function __construct(
+        protected HttpAutomockOptions $options,
+        protected HttpAutomockFileNameResolver $fileNameResolver,
         protected MessageSerializerFactory $messageSerializerFactory,
-        protected HttpAutomockFileNameResolver $httpAutomockFileNameResolver,
     ) {
     }
 
     public function enable(): static
     {
-        $this->enabled = true;
+        $this->options->enabled = true;
 
         if (! $this->registered) {
             $this->registerFakeHandler();
@@ -63,7 +44,7 @@ class HttpAutomock
 
     public function disable(): static
     {
-        $this->enabled = false;
+        $this->options->enabled = false;
 
         return $this;
     }
@@ -71,7 +52,7 @@ class HttpAutomock
     protected function registerFakeHandler(): void
     {
         Http::fake(function (Request $request) {
-            if (! $this->enabled || $this->requestFiltered($request)) {
+            if (! $this->options->enabled || $this->requestFiltered($request)) {
                 return null;
             }
 
@@ -91,29 +72,16 @@ class HttpAutomock
     protected function registerResponseEventHandler(): void
     {
         Event::listen(function (ResponseReceived $event) {
-            if (! $this->enabled || $this->requestFiltered($event->request)) {
+            if (! $this->options->enabled || $this->requestFiltered($event->request)) {
                 return null;
             }
 
             $filePath = $this->resolveFilePath($event->request, true);
 
-            if (! File::exists($filePath) || $this->renew) {
-                $jsonPrettyPrint = $this->jsonPrettyPrint !== null
-                    ? $this->jsonPrettyPrint
-                    : config('http-automock.json_pretty_print');
-
-                $headers = match ($this->headers) {
-                    null => config('http-automock.use_default_headers')
-                        ? config('http-automock.default_header_list')
-                        : [],
-                    false => [],
-                    true => ['*'],
-                    default => $this->headers,
-                };
-
+            if (! File::exists($filePath) || $this->options->renew) {
                 $fileContent = $this->messageSerializerFactory
-                    ->withHeaders($headers)
-                    ->prettyPrintJson($jsonPrettyPrint)
+                    ->withHeaders($this->options->headers)
+                    ->prettyPrintJson($this->options->jsonPrettyPrint)
                     ->serialize($event->response->toPsrResponse());
 
                 File::ensureDirectoryExists(dirname($filePath));
@@ -134,29 +102,28 @@ class HttpAutomock
         $directory = str('')
             ->append($testInstance->rootPath.DIRECTORY_SEPARATOR)
             ->append($testInstance->testPath.DIRECTORY_SEPARATOR)
-            ->append(config('http-automock.directory'))
+            ->append($this->options->directory)
             ->append($relativePath.DIRECTORY_SEPARATOR)
             ->append($description.DIRECTORY_SEPARATOR);
 
-        $fileNameResolver = $this->fileNameResolver ?? config('http-automock.default_filename_resolver');
-        $fileName = $this->httpAutomockFileNameResolver->resolve($fileNameResolver, $request, $forWriting, $directory->value());
+        $fileName = $this->fileNameResolver->resolve($this->options->fileNameResolver, $request, $forWriting, $directory->value());
 
         return $directory
             ->append($fileName)
-            ->append(config('http-automock.extension'))
+            ->append($this->options->extension)
             ->toString();
     }
 
     protected function requestFiltered(Request $request): bool
     {
-        foreach ($this->urlFilters as $urlFilter) {
+        foreach ($this->options->urlFilters as $urlFilter) {
             /** @see Factory::stubUrl() */
             if (Str::is(Str::start($urlFilter, '*'), $request->url())) {
                 return true;
             }
         }
 
-        foreach ($this->filters as $filter) {
+        foreach ($this->options->filters as $filter) {
             if ($filter($request)) {
                 return true;
             }
@@ -170,12 +137,12 @@ class HttpAutomock
         $fileExists = File::exists($filePath);
 
         // Determine whether the file should be loaded first
-        $fileMocked = $fileExists && ! $this->renew;
+        $fileMocked = $fileExists && ! $this->options->renew;
 
         if (! $fileMocked) {
             match (true) {
-                $this->preventRealRequests => throw new RuntimeException('Tried to send a real request that was prevented, file: '.$filePath),
-                $this->preventUnknownRealRequests && ! $fileExists => throw new RuntimeException('Tried to send an unknown real request that was prevented, file: '.$filePath),
+                $this->options->preventRealRequests => throw new RuntimeException('Tried to send a real request that was prevented, file: '.$filePath),
+                $this->options->preventUnknownRealRequests && ! $fileExists => throw new RuntimeException('Tried to send an unknown real request that was prevented, file: '.$filePath),
                 default => null,
             };
         }
@@ -185,8 +152,8 @@ class HttpAutomock
 
     public function resolveFileNameUsing(string|Closure|FileNameResolverInterface|null $resolver): static
     {
-        $this->httpAutomockFileNameResolver->forgetPreviousInstances();
-        $this->fileNameResolver = $resolver;
+        $this->fileNameResolver->forgetPreviousInstances();
+        $this->options->fileNameResolver = $resolver;
 
         return $this;
     }
@@ -198,15 +165,15 @@ class HttpAutomock
      */
     public function resolveFileNameUsingResolverAndArgs(string $resolver, array $args = []): static
     {
-        $this->httpAutomockFileNameResolver->forgetPreviousInstances();
-        $this->fileNameResolver = ['resolver' => $resolver, ...$args];
+        $this->fileNameResolver->forgetPreviousInstances();
+        $this->options->fileNameResolver = ['resolver' => $resolver, ...$args];
 
         return $this;
     }
 
     public function preventRealRequests(bool $prevent = true): static
     {
-        $this->preventRealRequests = $prevent;
+        $this->options->preventRealRequests = $prevent;
 
         return $this;
     }
@@ -217,7 +184,7 @@ class HttpAutomock
      */
     public function preventUnknownRealRequests(bool $prevent = true): static
     {
-        $this->preventUnknownRealRequests = $prevent;
+        $this->options->preventUnknownRealRequests = $prevent;
 
         return $this;
     }
@@ -227,7 +194,7 @@ class HttpAutomock
      */
     public function renew(bool $renew = true): static
     {
-        $this->renew = $renew;
+        $this->options->renew = $renew;
 
         return $this;
     }
@@ -237,7 +204,7 @@ class HttpAutomock
      */
     public function withHeaders(array|bool|null $headers = true): static
     {
-        $this->headers = $headers;
+        $this->options->headers = $headers;
 
         return $this;
     }
@@ -247,7 +214,7 @@ class HttpAutomock
      */
     public function jsonPrettyPrint(?bool $prettyPrint = true): static
     {
-        $this->jsonPrettyPrint = $prettyPrint;
+        $this->options->jsonPrettyPrint = $prettyPrint;
 
         return $this;
     }
@@ -256,11 +223,11 @@ class HttpAutomock
     {
         match (true) {
             is_string($url) => $alias
-                ? $this->urlFilters[$alias] = $url
-                : $this->urlFilters[] = $url,
+                ? $this->options->urlFilters[$alias] = $url
+                : $this->options->urlFilters[] = $url,
             is_callable($url) => $alias
-                ? $this->filters[$alias] = $url
-                : $this->filters[] = $url,
+                ? $this->options->filters[$alias] = $url
+                : $this->options->filters[] = $url,
             default => throw new RuntimeException("Invalid filter type"),
         };
 
@@ -305,14 +272,14 @@ class HttpAutomock
     public function stopSkip(?string $alias = null): static
     {
         if ($alias) {
-            Arr::forget($this->urlFilters, $alias);
-            Arr::forget($this->filters, $alias);
+            Arr::forget($this->options->urlFilters, $alias);
+            Arr::forget($this->options->filters, $alias);
 
             return $this;
         }
 
-        $this->urlFilters = [];
-        $this->filters = [];
+        $this->options->urlFilters = [];
+        $this->options->filters = [];
 
         return $this;
     }
