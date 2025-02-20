@@ -100,7 +100,7 @@ class HttpAutomock
             if (! File::exists($filePath) || $this->renew) {
                 $jsonPrettyPrint = $this->jsonPrettyPrint !== null
                     ? $this->jsonPrettyPrint
-                    : config('http-automock.json_prettyprint');
+                    : config('http-automock.json_pretty_print');
 
                 $headers = match ($this->headers) {
                     null => config('http-automock.use_default_headers')

@@ -97,6 +97,6 @@ return [
     | Content-Type is application/json.
     |
     */
-    'json_prettyprint' => true,
+    'json_pretty_print' => true,
 
 ];
