@@ -49,7 +49,10 @@ arch('commands use attribute')
 
 test('tests end with the correct suffix', function () {
     $files = [
+        ...File::allFiles(testDirectory('Feature')),
         ...File::allFiles(testDirectory('Unit')),
+        new SplFileInfo(testDirectory('ArchTest.php')),
+        new SplFileInfo(testDirectory('TestServerTest.php')),
     ];
     $fileNames = collect($files)->map(fn (SplFileInfo $file) => $file->getFilename());
 
