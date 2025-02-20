@@ -2,7 +2,7 @@
 
 use HttpAutomock\Serialization\MessageSerializerFactory;
 
-it('has the test server started', function () {
+it('started the test server', function () {
     $response = Http::get('http://localhost:9337/hello-world');
     expect($response->body())->toBe("Hello World!");
 });

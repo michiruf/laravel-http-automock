@@ -27,7 +27,7 @@ php artisan vendor:publish --tag="http-automock-config"
 To enable automock, call `Http::automock();` inside your tests before executing the requests you want to send to
 save responses automatically and use them in the next tests runs.
 
-For further examples, please refer to [this test](./tests/Unit/ExampleUsageTest.php).
+For further examples, please refer to [this test](./tests/Feature/ExampleUsageTest.php).
 
 ```php
 it('can do stuff with the api', function () {
