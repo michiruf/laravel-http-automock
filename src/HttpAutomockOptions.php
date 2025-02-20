@@ -3,6 +3,7 @@
 namespace HttpAutomock;
 
 use Closure;
+use Error;
 use HttpAutomock\Resolver\FileNameResolverInterface;
 use Illuminate\Config\Repository;
 use Illuminate\Http\Client\Request;
@@ -12,6 +13,7 @@ use Illuminate\Http\Client\Request;
  * @property string $directory
  * @property string $extension
  * @property string|Closure|array|FileNameResolverInterface|null $fileNameResolver
+ * @property string $defaultFilenameResolver
  * @property array|bool|null $headers
  * @property bool $useDefaultHeaders
  * @property bool $defaultHeaderList
@@ -26,10 +28,25 @@ use Illuminate\Http\Client\Request;
  */
 class HttpAutomockOptions
 {
-    public array $options = [];
+    protected array $options = [];
 
-    protected static array $fallbacks = [
-        'fileNameResolver' => 'default_filename_resolver',
+    protected static array $existingOptions = [
+        'enabled',
+        'directory',
+        'extension',
+        'fileNameResolver',
+        'defaultFilenameResolver',
+        'headers',
+        'useDefaultHeaders',
+        'defaultHeaderList',
+        'urlFilters',
+        'filters',
+        'jsonPrettyPrint',
+        'preventRealRequests',
+        'preventUnknownRealRequests',
+        'renew',
+        'prune',
+        'preventAutoRenew',
     ];
 
     public function __construct(
@@ -40,45 +57,75 @@ class HttpAutomockOptions
     }
 
     /** @noinspection PhpUnused */
-    protected function modifyHeaders($value): array|bool
+    protected function fileNameResolver(): string|Closure|array|FileNameResolverInterface|null
     {
-        return match ($value) {
+        return $this->getInstanceValue('fileNameResolver') ?? $this->defaultFilenameResolver;
+    }
+
+    /** @noinspection PhpUnused */
+    protected function headers(): array|bool
+    {
+        $headers = $this->getInstanceValue('headers');
+
+        return match ($headers) {
             null => $this->useDefaultHeaders
                 ? $this->defaultHeaderList
                 : [],
             false => [],
             true => ['*'],
-            default => $value,
+            default => $headers,
         };
     }
 
-    protected function getConfig(string $name): mixed
+    protected function &getPropagatedValue(string $name): mixed
     {
-        $configName = str($name)->snake()->value();
+        $value = &$this->getInstanceValue($name);
 
-        $value = $this->config->get("http-automock.$configName");
+        if (!isset($value)) {
+            // TODO $this->getCommandArgument($name)
+        }
 
-        if (! $value && isset(static::$fallbacks[$name])) {
-            $fallbackName = static::$fallbacks[$name];
-
-            return $this->getConfig($fallbackName);
+        if (!isset($value)) {
+            $value = $this->getConfigValue($name);
         }
 
         return $value;
     }
 
-    public function &__get(string $name)
+    protected function &getInstanceValue(string $name): mixed
     {
         $value = &$this->options[$name];
 
-        if (! isset($value)) {
-            $value = $this->getConfig($name);
+        if (!isset($value)) {
+            $value = null;
         }
 
-        $methodName = str($name)->ucfirst()->prepend("modify")->value();
-        if (method_exists($this, $methodName)) {
-            $value = $this->$methodName($value);
+        return $value;
+    }
+
+    protected function getConfigValue(string $name): mixed
+    {
+        $configName = str($name)->snake()->value();
+
+        return $this->config->get("http-automock.$configName");
+    }
+
+    public function &__get(string $name)
+    {
+        if (!in_array($name, static::$existingOptions)) {
+            // e.g. "ErrorException: Undefined property: Bar::$foor"
+            throw new Error("Undefined property: HttpAutomockOptions::$name");
         }
+
+        $value = method_exists($this, $name)
+            ? $this->{$name}()
+            : null;
+
+        if (!isset ($value)) {
+            $value = &$this->getPropagatedValue($name);
+        }
+
+        // TODO Throw uninitialized error
 
         return $value;
     }
@@ -87,9 +134,4 @@ class HttpAutomockOptions
     {
         $this->options[$name] = $value;
     }
-
-//    public function __call(string $name, array $arguments)
-//    {
-//        return $this->$name ?? $arguments[0];
-//    }
 }
