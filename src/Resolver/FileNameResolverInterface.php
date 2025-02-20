@@ -4,12 +4,13 @@ namespace HttpAutomock\Resolver;
 
 use Illuminate\Http\Client\Request;
 
-interface RequestFileNameResolverInterface
+interface FileNameResolverInterface
 {
     /**
      * @param  Request  $request  The request used to resolve the filename
      * @param  bool  $forWriting  If the file name is intended to be written to
+     * @param  string  $directory  The directory the mock should get written to, might be handy to avoid file collisions
      * @return string File name
      */
-    function resolve(Request $request, bool $forWriting): string;
+    function resolve(Request $request, bool $forWriting, string $directory): string;
 }

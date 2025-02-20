@@ -32,4 +32,17 @@ class HttpAutomockMixin
             return HttpAutomockFacade::disable();
         };
     }
+
+    /** @noinspection PhpUnused */
+    public function configureAutomock(): callable
+    {
+        /**
+         * Return the automock instance to configure it.
+         *
+         * @return HttpAutomock
+         */
+        return function (): HttpAutomock {
+            return HttpAutomockFacade::getFacadeRoot();
+        };
+    }
 }
