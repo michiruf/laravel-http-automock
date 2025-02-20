@@ -1,8 +1,6 @@
 <?php
 
 use HttpAutomock\Resolver\CountResolver;
-use HttpAutomock\Resolver\RequestMethodResolver;
-use HttpAutomock\Resolver\RequestUrlResolver;
 use HttpAutomock\Resolver\Resolver;
 use HttpAutomock\Resolver\StackResolver;
 use Illuminate\Http\Client\Events\ResponseReceived;
@@ -116,12 +114,14 @@ it('can force renew responses', function () {
 it('cannot make requests without mocks when renew is disallowed', function () {
     $mockDirectory = deletePreviousMock();
 
-    Http::automock()->renew(false);
+    Http::automock()->preventRealRequests();
     Http::get('http://localhost:9337/coffee/hot');
 
     // Mock file path is configured properly
     expect(File::isDirectory($mockDirectory))->toBeTrue('Set up wrong directory in test');
-})->throws(RuntimeException::class, 'Tried to send a request that has renewing disallowed');
+})->throws(RuntimeException::class, 'Tried to send a real request that was prevented');
+
+todo('can make requests when renewing and requests except renewing are disallowed');
 
 it('can specify filename resolution', function () {
     Http::fake([

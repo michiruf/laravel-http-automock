@@ -26,7 +26,11 @@ class HttpAutomock
 
     protected string|Closure|array|FileNameResolverInterface|null $fileNameResolver = null;
 
-    protected ?bool $renew = null;
+    protected bool $preventRealRequests = false;
+
+    protected bool $preventUnknownRealRequests = false;
+
+    protected bool $renew = false;
 
     protected array|bool|null $headers = null;
 
@@ -73,13 +77,11 @@ class HttpAutomock
 
             $filePath = $this->resolveFilePath($request, false);
 
-            if (File::exists($filePath) && $this->renew !== true) {
+            if ($this->canMockFileOrThrow($filePath)) {
                 $fileContent = File::get($filePath);
                 $response = $this->messageSerializerFactory->deserialize($fileContent);
 
                 return Create::promiseFor($response);
-            } elseif ($this->renew === false) {
-                throw new RuntimeException('Tried to send a request that has renewing disallowed');
             }
 
             return null;
@@ -95,7 +97,7 @@ class HttpAutomock
 
             $filePath = $this->resolveFilePath($event->request, true);
 
-            if (! File::exists($filePath) || $this->renew === true) {
+            if (! File::exists($filePath) || $this->renew) {
                 $jsonPrettyPrint = $this->jsonPrettyPrint !== null
                     ? $this->jsonPrettyPrint
                     : config('http-automock.json_prettyprint');
@@ -163,6 +165,24 @@ class HttpAutomock
         return false;
     }
 
+    protected function canMockFileOrThrow(string $filePath): bool
+    {
+        $fileExists = File::exists($filePath);
+
+        // Determine whether the file should be loaded first
+        $fileMocked = $fileExists && ! $this->renew;
+
+        if (! $fileMocked) {
+            match (true) {
+                $this->preventRealRequests => throw new RuntimeException('Tried to send a real request that was prevented, file: '.$filePath),
+                $this->preventUnknownRealRequests && ! $fileExists => throw new RuntimeException('Tried to send an unknown real request that was prevented, file: '.$filePath),
+                default => null,
+            };
+        }
+
+        return $fileMocked;
+    }
+
     public function resolveFileNameUsing(string|Closure|FileNameResolverInterface|null $resolver): static
     {
         $this->httpAutomockFileNameResolver->forgetPreviousInstances();
@@ -184,10 +204,28 @@ class HttpAutomock
         return $this;
     }
 
+    public function preventRealRequests(bool $prevent = true): static
+    {
+        $this->preventRealRequests = $prevent;
+
+        return $this;
+    }
+
+    /**
+     * Prevents real request but does allow renewing request that are already "known".
+     * A known requests has a file existing for the file name the request gets mapped to.
+     */
+    public function preventUnknownRealRequests(bool $prevent = true): static
+    {
+        $this->preventUnknownRealRequests = $prevent;
+
+        return $this;
+    }
+
     /**
      * @param  bool|null  $renew  Renew when file not exists if null, renew always if true, renew never if false
      */
-    public function renew(?bool $renew = true): static
+    public function renew(bool $renew = true): static
     {
         $this->renew = $renew;
 

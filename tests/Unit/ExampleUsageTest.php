@@ -47,17 +47,32 @@ it('can persist all headers', function () {
 
 it('can force renew responses', function () {
     $now = now();
+
     Http::automock()->renew();
     Http::get('http://localhost:9337/coffee/hot');
+
     $path = 'tests/.pest/automock/Unit/ExampleUsageTest/it_can_force_renew_responses/1_GET_4c147242.mock';
     expect(File::exists($path))->toBeTrue()
         ->and(File::lastModified($path))->toBeGreaterThanOrEqual($now->getTimestamp());
 });
 
-it('can disallow renewing responses', function () {
-    Http::automock()->renew(false);
+it('can prevent all real requests', function () {
+    Http::automock()->preventRealRequests();
     Http::get('http://localhost:9337/coffee/hot');
-})->throws(RuntimeException::class, 'Tried to send a request that has renewing disallowed');
+})->throws(RuntimeException::class, 'Tried to send a real request that was prevented');
+
+it('can prevent real requests except renewing', function () {
+    $path = 'tests/.pest/automock/Unit/ExampleUsageTest/it_can_prevent_real_requests_except_renewing/1_GET_4c147242.mock';
+    File::ensureDirectoryExists(dirname($path));
+    File::put($path, '');
+
+    Http::automock()
+        ->preventUnknownRealRequests()
+        ->renew();
+    Http::get('http://localhost:9337/coffee/hot');
+
+    expect(File::get($path))->not->toBeEmpty();
+});
 
 it('can disable automock entirely', function () {
     Http::automock()->disable();
