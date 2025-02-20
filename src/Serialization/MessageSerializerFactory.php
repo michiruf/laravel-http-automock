@@ -10,7 +10,7 @@ class MessageSerializerFactory
 
     protected bool $prettyPrintJson = false;
 
-    public function withHeaders(?array $headers): static
+    public function withHeaders(array $headers): static
     {
         $this->headers = $headers;
 
