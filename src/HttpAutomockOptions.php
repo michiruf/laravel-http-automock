@@ -59,10 +59,10 @@ class HttpAutomockOptions
     {
         /** @var Stringable $arg */
         $arg = collect($this->commandArgs)
-            ->map(fn (string $arg) => str($arg))
-            ->first(fn (Stringable $arg) => $arg->startsWith("--automock-$argName="));
+            ->map(fn(string $arg) => str($arg))
+            ->first(fn(Stringable $arg) => $arg->startsWith("--automock-$argName="));
 
-        if (! $arg) {
+        if (!$arg) {
             return null;
         }
 
@@ -96,7 +96,7 @@ class HttpAutomockOptions
             ?? $this->config->get('http-automock.extension', '.mock');
     }
 
-    public function fileNameResolver(): FileNameResolverInterface|array|string|Closure
+    public function fileNameResolver(): string|Closure|array|FileNameResolverInterface
     {
         return $this->fileNameResolver
             ?? $this->commandArg('file-name-resolver')
@@ -124,14 +124,17 @@ class HttpAutomockOptions
             ?? $this->config->get('http-automock.renew', false);
     }
 
-    public function headers(): bool|array
+    /**
+     * @return string[]
+     */
+    public function headers(): array
     {
         $defaultHeaders = $this->config->get('http-automock.use_default_headers', false)
             ? $this->config->get('http-automock.default_header_list', [])
             : [];
 
         $headers = $this->headers
-            ?? $this->commandArg('headers')
+            ?? $this->commandArg('headers', fn (string $headers) => explode(',', $headers))
             ?? $defaultHeaders;
 
         return match ($headers) {
@@ -148,13 +151,18 @@ class HttpAutomockOptions
             ?? $this->config->get('http-automock.json_pretty_print', false);
     }
 
+    /**
+     * @return array<int|string, string>
+     */
     public function urlFilters(): array
     {
-        return $this->urlFilters ?? [];
+        return $this->urlFilters
+            ?? $this->hasCommandOption('url-filters')
+            ?? $this->config->get('http-automock.url_filters', []);
     }
 
     /**
-     * @return array<int|string, Closure>
+     * @return array<int|string, callable(Request): bool>
      */
     public function filters(): array
     {
