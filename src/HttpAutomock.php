@@ -52,7 +52,7 @@ class HttpAutomock
     protected function registerFakeHandler(): void
     {
         Http::fake(function (Request $request) {
-            if (! $this->options->enabled || $this->requestFiltered($request)) {
+            if (! $this->options->enabled() || $this->requestFiltered($request)) {
                 return null;
             }
 
@@ -72,16 +72,16 @@ class HttpAutomock
     protected function registerResponseEventHandler(): void
     {
         Event::listen(function (ResponseReceived $event) {
-            if (! $this->options->enabled || $this->requestFiltered($event->request)) {
+            if (! $this->options->enabled() || $this->requestFiltered($event->request)) {
                 return null;
             }
 
             $filePath = $this->resolveFilePath($event->request, true);
 
-            if (! File::exists($filePath) || $this->options->renew) {
+            if (! File::exists($filePath) || $this->options->renew()) {
                 $fileContent = $this->messageSerializerFactory
-                    ->withHeaders($this->options->headers)
-                    ->prettyPrintJson($this->options->jsonPrettyPrint)
+                    ->withHeaders($this->options->headers())
+                    ->prettyPrintJson($this->options->jsonPrettyPrint())
                     ->serialize($event->response->toPsrResponse());
 
                 File::ensureDirectoryExists(dirname($filePath));
@@ -102,28 +102,28 @@ class HttpAutomock
         $directory = str('')
             ->append($testInstance->rootPath.DIRECTORY_SEPARATOR)
             ->append($testInstance->testPath.DIRECTORY_SEPARATOR)
-            ->append($this->options->directory)
+            ->append($this->options->directory())
             ->append($relativePath.DIRECTORY_SEPARATOR)
             ->append($description.DIRECTORY_SEPARATOR);
 
-        $fileName = $this->fileNameResolver->resolve($this->options->fileNameResolver, $request, $forWriting, $directory->value());
+        $fileName = $this->fileNameResolver->resolve($this->options->fileNameResolver(), $request, $forWriting, $directory->value());
 
         return $directory
             ->append($fileName)
-            ->append($this->options->extension)
+            ->append($this->options->extension())
             ->toString();
     }
 
     protected function requestFiltered(Request $request): bool
     {
-        foreach ($this->options->urlFilters as $urlFilter) {
+        foreach ($this->options->urlFilters() as $urlFilter) {
             /** @see Factory::stubUrl() */
             if (Str::is(Str::start($urlFilter, '*'), $request->url())) {
                 return true;
             }
         }
 
-        foreach ($this->options->filters as $filter) {
+        foreach ($this->options->filters() as $filter) {
             if ($filter($request)) {
                 return true;
             }
@@ -137,12 +137,12 @@ class HttpAutomock
         $fileExists = File::exists($filePath);
 
         // Determine whether the file should be loaded first
-        $fileMocked = $fileExists && ! $this->options->renew;
+        $fileMocked = $fileExists && ! $this->options->renew();
 
         if (! $fileMocked) {
             match (true) {
-                $this->options->preventRealRequests => throw new RuntimeException('Tried to send a real request that was prevented, file: '.$filePath),
-                $this->options->preventUnknownRealRequests && ! $fileExists => throw new RuntimeException('Tried to send an unknown real request that was prevented, file: '.$filePath),
+                $this->options->preventRealRequests() => throw new RuntimeException('Tried to send a real request that was prevented, file: '.$filePath),
+                $this->options->preventUnknownRealRequests() && ! $fileExists => throw new RuntimeException('Tried to send an unknown real request that was prevented, file: '.$filePath),
                 default => null,
             };
         }
