@@ -6,6 +6,9 @@ use Closure;
 use HttpAutomock\Resolver\FileNameResolverInterface;
 use Illuminate\Config\Repository;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Stringable;
+use Symfony\Component\Console\Input\ArgvInput;
 
 class HttpAutomockOptions
 {
@@ -33,20 +36,49 @@ class HttpAutomockOptions
     /** @var Closure<Request, bool>[]|null */
     public ?array $filters = null;
 
+    /** @var Collection<int, string> */
+    protected Collection $commandArgs;
+
     public function __construct(
         protected Repository $config,
     ) {
+        $this->commandArgs = collect((new ArgvInput())->getRawTokens());
     }
 
-    protected function commandArg(string $argName): mixed
+    protected function hasCommandOption(string $argName): ?bool
     {
-        return null;
+        $value = $this->commandArgs->contains("--automock-$argName");
+
+        return $value ?: null;
+    }
+
+    /**
+     * @param  ?callable(string): mixed  $transformValue
+     */
+    protected function commandArg(string $argName, ?callable $transformValue = null): mixed
+    {
+        /** @var Stringable $arg */
+        $arg = collect($this->commandArgs)
+            ->map(fn (string $arg) => str($arg))
+            ->first(fn (Stringable $arg) => $arg->startsWith("--automock-$argName="));
+
+        if (! $arg) {
+            return null;
+        }
+
+        $value = $arg->after('=')->value();
+
+        if ($transformValue) {
+            $value = $transformValue($value);
+        }
+
+        return $value ?: null;
     }
 
     public function enabled(): bool
     {
         return $this->enabled
-            ?? $this->commandArg('enabled')
+            ?? $this->hasCommandOption('enabled')
             ?? $this->config->get('http-automock.enabled', true);
     }
 
@@ -74,21 +106,21 @@ class HttpAutomockOptions
     public function preventRealRequests(): bool
     {
         return $this->preventRealRequests
-            ?? $this->commandArg('prevent-real-requests')
+            ?? $this->hasCommandOption('prevent-real-requests')
             ?? $this->config->get('http-automock.prevent_real_requests', false);
     }
 
     public function preventUnknownRealRequests(): bool
     {
         return $this->preventUnknownRealRequests
-            ?? $this->commandArg('prevent-unknown-real-requests')
+            ?? $this->hasCommandOption('prevent-unknown-real-requests')
             ?? $this->config->get('http-automock.prevent_unknown_real_requests', false);
     }
 
     public function renew(): bool
     {
         return $this->renew
-            ?? $this->commandArg('renew')
+            ?? $this->hasCommandOption('renew')
             ?? $this->config->get('http-automock.renew', false);
     }
 
@@ -112,7 +144,7 @@ class HttpAutomockOptions
     public function jsonPrettyPrint(): bool
     {
         return $this->jsonPrettyPrint
-            ?? $this->commandArg('json-pretty-print')
+            ?? $this->hasCommandOption('json-pretty-print')
             ?? $this->config->get('http-automock.json_pretty_print', false);
     }
 
