@@ -24,13 +24,13 @@ class HttpAutomock
 
     protected bool $registered = false;
 
+    protected bool $read = true;
+
+    protected bool $create = true;
+
+    protected bool $update = false;
+
     protected string|Closure|array|FileNameResolverInterface|null $fileNameResolver = null;
-
-    protected bool $preventRealRequests = false;
-
-    protected bool $preventUnknownRealRequests = false;
-
-    protected bool $renew = false;
 
     protected array|bool|null $headers = null;
 
@@ -77,14 +77,18 @@ class HttpAutomock
 
             $filePath = $this->resolveFilePath($request, false);
 
-            if ($this->canMockFileOrThrow($filePath)) {
+            if (File::exists($filePath) && $this->read) {
                 $fileContent = File::get($filePath);
                 $response = $this->messageSerializerFactory->deserialize($fileContent);
 
                 return Create::promiseFor($response);
+            } else if(File::exists($filePath) && $this->update) {
+                return null;
+            } else if(! File::exists($filePath) && $this->create) {
+                return null;
             }
 
-            return null;
+            throw new RuntimeException("Tried to send a real request that was prevented");
         });
     }
 
@@ -97,7 +101,10 @@ class HttpAutomock
 
             $filePath = $this->resolveFilePath($event->request, true);
 
-            if (! File::exists($filePath) || $this->renew) {
+            if (
+                $this->create && ! File::exists($filePath) ||
+                $this->update
+            ) {
                 $jsonPrettyPrint = $this->jsonPrettyPrint !== null
                     ? $this->jsonPrettyPrint
                     : config('http-automock.json_pretty_print');
@@ -165,24 +172,6 @@ class HttpAutomock
         return false;
     }
 
-    protected function canMockFileOrThrow(string $filePath): bool
-    {
-        $fileExists = File::exists($filePath);
-
-        // Determine whether the file should be loaded first
-        $fileMocked = $fileExists && ! $this->renew;
-
-        if (! $fileMocked) {
-            match (true) {
-                $this->preventRealRequests => throw new RuntimeException('Tried to send a real request that was prevented, file: '.$filePath),
-                $this->preventUnknownRealRequests && ! $fileExists => throw new RuntimeException('Tried to send an unknown real request that was prevented, file: '.$filePath),
-                default => null,
-            };
-        }
-
-        return $fileMocked;
-    }
-
     public function resolveFileNameUsing(string|Closure|FileNameResolverInterface|null $resolver): static
     {
         $this->httpAutomockFileNameResolver->forgetPreviousInstances();
@@ -204,30 +193,38 @@ class HttpAutomock
         return $this;
     }
 
-    public function preventRealRequests(bool $prevent = true): static
+    public function preventRealRequests(): static
     {
-        $this->preventRealRequests = $prevent;
+        $this->read = true;
+        $this->create = false;
+        $this->update = false;
 
         return $this;
     }
 
-    /**
-     * Prevents real request but does allow renewing request that are already "known".
-     * A known requests has a file existing for the file name the request gets mapped to.
-     */
-    public function preventUnknownRealRequests(bool $prevent = true): static
+    public function preventUnknownRealRequests(): static
     {
-        $this->preventUnknownRealRequests = $prevent;
+        $this->read = true;
+        $this->create = false;
+        $this->update = true;
 
         return $this;
     }
 
-    /**
-     * @param  bool|null  $renew  Renew when file not exists if null, renew always if true, renew never if false
-     */
-    public function renew(bool $renew = true): static
+    public function renew(): static
     {
-        $this->renew = $renew;
+        $this->read = false;
+        $this->create = true;
+        $this->update = true;
+
+        return $this;
+    }
+
+    public function renewExisting(): static
+    {
+        $this->read = false;
+        $this->create = false;
+        $this->update = true;
 
         return $this;
     }

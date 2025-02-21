@@ -123,7 +123,7 @@ it('can prevent unknown real requests', function () {
 
     Http::automock()->preventUnknownRealRequests();
     Http::get('http://localhost:9337/coffee/hot');
-})->throws(RuntimeException::class, 'Tried to send an unknown real request that was prevented');
+})->throws(RuntimeException::class, 'Tried to send a real request that was prevented');
 
 it('can renew known requests', function () {
     $path = deletePreviousMock('4c147242.mock');
@@ -142,10 +142,9 @@ it('cannot renew unknown requests', function() {
     deletePreviousMock();
 
     Http::automock()
-        ->preventUnknownRealRequests()
-        ->renew();
+        ->renewExisting();
     Http::get('http://localhost:9337/coffee/hot');
-})->throws(RuntimeException::class, 'Tried to send an unknown real request that was prevented');
+})->throws(RuntimeException::class, 'Tried to send a real request that was prevented');
 
 it('can specify filename resolution', function () {
     Http::fake([
