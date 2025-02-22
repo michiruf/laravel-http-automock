@@ -209,6 +209,13 @@ class HttpAutomock
         return $this;
     }
 
+    public function preventAutoRenew(bool $prevent = true): static
+    {
+        $this->options->preventAutoRenew = $prevent;
+
+        return $this;
+    }
+
     public function mockHttpFakes(bool $mock = true): static
     {
         $this->options->mockHttpFakes = $mock;
