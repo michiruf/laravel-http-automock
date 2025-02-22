@@ -181,7 +181,7 @@ class HttpAutomock
         return $this;
     }
 
-    public function preventRealRequests(bool $prevent = true): static
+    public function preventRealRequests(?bool $prevent = true): static
     {
         $this->options->preventRealRequests = $prevent;
 
@@ -192,7 +192,7 @@ class HttpAutomock
      * Prevents real request but does allow renewing request that are already "known".
      * A known requests has a file existing for the file name the request gets mapped to.
      */
-    public function preventUnknownRealRequests(bool $prevent = true): static
+    public function preventUnknownRealRequests(?bool $prevent = true): static
     {
         $this->options->preventUnknownRealRequests = $prevent;
 
@@ -202,7 +202,7 @@ class HttpAutomock
     /**
      * @param  bool|null  $renew  Renew when file not exists if null, renew always if true, renew never if false
      */
-    public function renew(bool $renew = true): static
+    public function renew(?bool $renew = true): static
     {
         $this->options->renew = $renew;
 
@@ -216,7 +216,7 @@ class HttpAutomock
         return $this;
     }
 
-    public function mockHttpFakes(bool $mock = true): static
+    public function mockHttpFakes(?bool $mock = true): static
     {
         $this->options->mockHttpFakes = $mock;
 
