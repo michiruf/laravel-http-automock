@@ -10,6 +10,7 @@ use HttpAutomock\Service\HttpAutomockFileNameResolver;
 use Illuminate\Http\Client\Events\ResponseReceived;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\Request;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
@@ -78,7 +79,7 @@ class HttpAutomock
 
             $filePath = $this->resolveFilePath($event->request, true);
 
-            if (! File::exists($filePath) || $this->options->renew()) {
+            if ($this->canSaveResponse($event->response, $filePath)) {
                 $fileContent = $this->messageSerializerFactory
                     ->withHeaders($this->options->headers())
                     ->prettyPrintJson($this->options->jsonPrettyPrint())
@@ -150,6 +151,16 @@ class HttpAutomock
         return $fileMocked;
     }
 
+    protected function canSaveResponse(Response $response, string $filePath): bool
+    {
+        $isFake = empty($response->handlerStats());
+        if ($isFake && ! $this->options->mockHttpFakes()) {
+            return false;
+        }
+
+        return ! File::exists($filePath) || $this->options->renew();
+    }
+
     public function resolveFileNameUsing(string|Closure|FileNameResolverInterface|null $resolver): static
     {
         $this->fileNameResolver->forgetPreviousInstances();
@@ -195,6 +206,13 @@ class HttpAutomock
     public function renew(bool $renew = true): static
     {
         $this->options->renew = $renew;
+
+        return $this;
+    }
+
+    public function mockHttpFakes(bool $mock = true): static
+    {
+        $this->options->mockHttpFakes = $mock;
 
         return $this;
     }

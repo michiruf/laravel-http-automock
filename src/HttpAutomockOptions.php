@@ -26,6 +26,8 @@ class HttpAutomockOptions
 
     public ?bool $renew = null;
 
+    public ?bool $mockHttpFakes = null;
+
     public array|bool|null $headers = null;
 
     public ?bool $jsonPrettyPrint = null;
@@ -122,6 +124,13 @@ class HttpAutomockOptions
         return $this->renew
             ?? $this->hasCommandOption('renew')
             ?? $this->config->get('http-automock.renew', false);
+    }
+
+    public function mockHttpFakes(): bool
+    {
+        return $this->mockHttpFakes
+            ?? $this->hasCommandOption('mock-http-fakes')
+            ?? $this->config->get('http-automock.mock_http_fakes', false);
     }
 
     /**
