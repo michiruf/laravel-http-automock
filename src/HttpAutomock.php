@@ -18,10 +18,13 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Pest\TestSuite;
 use RuntimeException;
+use SplFileInfo;
 
 class HttpAutomock
 {
     protected bool $registered = false;
+
+    protected array $prunedFiles = [];
 
     public function __construct(
         protected HttpAutomockOptions $options,
@@ -56,6 +59,10 @@ class HttpAutomock
                 return null;
             }
 
+            if ($this->options->pruneOnce()) {
+                $this->performPruning();
+            }
+
             $filePath = $this->resolveMockPath($request, false);
 
             if ($this->canMockRequestOrThrow($request, $filePath)) {
@@ -74,6 +81,10 @@ class HttpAutomock
         Event::listen(function (ResponseReceived $event) {
             if (! $this->options->enabled() || $this->requestFiltered($event->request)) {
                 return null;
+            }
+
+            if ($this->options->pruneOnce()) {
+                $this->performPruning();
             }
 
             $filePath = $this->resolveMockPath($event->request, true);
@@ -146,11 +157,14 @@ class HttpAutomock
         $fileMocked = $fileExists && ! $this->options->renew();
 
         if (! $fileMocked) {
-            match (true) {
-                $this->options->preventRealRequests() => throw new RuntimeException("Tried to send a real request that was prevented, url: {$request->url()}, file: $filePath"),
-                $this->options->preventUnknownRealRequests() && ! $fileExists => throw new RuntimeException("Tried to send an unknown real request that was prevented, url: {$request->url()}, file: $filePath"),
-                default => null,
-            };
+            if ($this->options->preventRealRequests()) {
+                throw new RuntimeException("Tried to send a real request that was prevented, url: {$request->url()}, file: $filePath");
+            }
+
+            $requestIsKnown = $fileExists || in_array($filePath, $this->prunedFiles);
+            if ($this->options->preventUnknownRealRequests() && ! $requestIsKnown) {
+                throw new RuntimeException("Tried to send an unknown real request that was prevented, url: {$request->url()}, file: $filePath");
+            }
         }
 
         return $fileMocked;
@@ -164,6 +178,17 @@ class HttpAutomock
         }
 
         return ! File::exists($filePath) || $this->options->renew();
+    }
+
+    protected function performPruning(): void
+    {
+        $directory = $this->testDirectory();
+
+        $this->prunedFiles = collect(File::allFiles($directory))
+            ->map(fn (SplFileInfo $file) => $file->getPathname())
+            ->toArray();
+
+        File::deleteDirectory($directory);
     }
 
     public function resolveFileNameUsing(string|Closure|FileNameResolverInterface|null $resolver): static
@@ -218,6 +243,19 @@ class HttpAutomock
     public function preventAutoRenew(bool $prevent = true): static
     {
         $this->options->preventAutoRenew = $prevent;
+
+        return $this;
+    }
+
+    public function prune(?bool $prune = true, bool $performImmediately = true): static
+    {
+        if ($performImmediately) {
+            $this->performPruning();
+
+            return $this;
+        }
+
+        $this->options->prune = $prune;
 
         return $this;
     }
