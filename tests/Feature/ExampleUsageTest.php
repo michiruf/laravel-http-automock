@@ -25,6 +25,12 @@ it('can specify file names via closure', function () {
     expect(File::exists('tests/.pest/automock/Feature/ExampleUsageTest/it_can_specify_file_names_via_closure/TEST-GET.mock'))->toBeTrue();
 });
 
+it('can put mocks in subdirectories', function() {
+    Http::automock()->resolveFileNameUsing('url_subdirectory');
+    Http::get('http://localhost:9337/coffee/hot');
+    expect(File::exists('tests/.pest/automock/Feature/ExampleUsageTest/it_can_put_mocks_in_subdirectories/localhost-9337/coffee/hot.mock'))->toBeTrue();
+});
+
 it('can persist some headers', function () {
     Http::automock()->withHeaders(['Server']);
     Http::get('http://localhost:9337/coffee/hot');

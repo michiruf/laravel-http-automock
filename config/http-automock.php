@@ -63,6 +63,10 @@ return [
             'hashMethod' => 'xxh32',
         ],
 
+        'url_subdirectory' => [
+            'resolver' => \HttpAutomock\Resolver\RequestUrlResolver::class,
+        ],
+
         'data_hash' => [
             'resolver' => \HttpAutomock\Resolver\RequestResolver::class,
             'hashMethod' => 'xxh32',
