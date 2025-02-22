@@ -56,9 +56,9 @@ class HttpAutomock
                 return null;
             }
 
-            $filePath = $this->resolveFilePath($request, false);
+            $filePath = $this->resolveMockPath($request, false);
 
-            if ($this->canMockFileOrThrow($filePath)) {
+            if ($this->canMockRequestOrThrow($request, $filePath)) {
                 $fileContent = File::get($filePath);
                 $response = $this->messageSerializerFactory->deserialize($fileContent);
 
@@ -76,7 +76,7 @@ class HttpAutomock
                 return null;
             }
 
-            $filePath = $this->resolveFilePath($event->request, true);
+            $filePath = $this->resolveMockPath($event->request, true);
 
             if ($this->canSaveResponse($event->response, $filePath)) {
                 $fileContent = $this->messageSerializerFactory
@@ -90,7 +90,7 @@ class HttpAutomock
         });
     }
 
-    protected function resolveFilePath(Request $request, bool $forWriting): string
+    protected function resolveMockPath(Request $request, bool $forWriting): string
     {
         $directory = str($this->testDirectory());
 
@@ -138,7 +138,7 @@ class HttpAutomock
         return false;
     }
 
-    protected function canMockFileOrThrow(string $filePath): bool
+    protected function canMockRequestOrThrow(Request $request, string $filePath): bool
     {
         $fileExists = File::exists($filePath);
 
@@ -147,8 +147,8 @@ class HttpAutomock
 
         if (! $fileMocked) {
             match (true) {
-                $this->options->preventRealRequests() => throw new RuntimeException('Tried to send a real request that was prevented, file: '.$filePath),
-                $this->options->preventUnknownRealRequests() && ! $fileExists => throw new RuntimeException('Tried to send an unknown real request that was prevented, file: '.$filePath),
+                $this->options->preventRealRequests() => throw new RuntimeException("Tried to send a real request that was prevented, url: {$request->url()}, file: $filePath"),
+                $this->options->preventUnknownRealRequests() && ! $fileExists => throw new RuntimeException("Tried to send an unknown real request that was prevented, url: {$request->url()}, file: $filePath"),
                 default => null,
             };
         }
