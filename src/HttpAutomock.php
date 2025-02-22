@@ -4,6 +4,7 @@ namespace HttpAutomock;
 
 use Closure;
 use GuzzleHttp\Promise\Create;
+use HttpAutomock\Event\RealRequestSendingEvent;
 use HttpAutomock\Exceptions\PreventedRequestException;
 use HttpAutomock\Resolver\FileNameResolverInterface;
 use HttpAutomock\Serialization\MessageSerializerFactory;
@@ -38,7 +39,8 @@ class HttpAutomock
 
         if (! $this->registered) {
             $this->registerFakeHandler();
-            $this->registerResponseEventHandler();
+            $this->registerPreventRequestsHandler();
+            $this->registerResponseHandler();
             $this->registered = true;
         }
 
@@ -65,7 +67,7 @@ class HttpAutomock
 
             $filePath = $this->resolveMockPath($request, false);
 
-            if ($this->canMockRequestOrThrow($request, $filePath)) {
+            if ($this->canFakeRequestForFile($filePath)) {
                 $fileContent = File::get($filePath);
                 $response = $this->messageSerializerFactory->deserialize($fileContent);
 
@@ -76,7 +78,31 @@ class HttpAutomock
         });
     }
 
-    protected function registerResponseEventHandler(): void
+    protected function registerPreventRequestsHandler(): void
+    {
+        Event::listen(RealRequestSendingEvent::class, function (RealRequestSendingEvent $event) {
+            $request = new Request($event->request);
+            if (! $this->options->enabled() || $this->requestFiltered($request)) {
+                return;
+            }
+
+            $filePath = $this->resolveMockPath($request, false);
+            $fileExists = File::exists($filePath);
+
+            if (! $fileExists) {
+                if ($this->options->preventRealRequests()) {
+                    throw new PreventedRequestException($request, $filePath, false);
+                }
+
+                $requestIsKnown = in_array($filePath, $this->prunedFiles);
+                if ($this->options->preventUnknownRealRequests() && ! $requestIsKnown) {
+                    throw new PreventedRequestException($request, $filePath, true);
+                }
+            }
+        });
+    }
+
+    protected function registerResponseHandler(): void
     {
         Event::listen(function (ResponseReceived $event) {
             if (! $this->options->enabled() || $this->requestFiltered($event->request)) {
@@ -149,25 +175,11 @@ class HttpAutomock
         return false;
     }
 
-    protected function canMockRequestOrThrow(Request $request, string $filePath): bool
+    protected function canFakeRequestForFile(string $filePath): bool
     {
         $fileExists = File::exists($filePath);
 
-        // Determine whether the file should be loaded first
-        $fileMocked = $fileExists && ! $this->options->renew();
-
-        if (! $fileMocked) {
-            if ($this->options->preventRealRequests()) {
-                throw new PreventedRequestException($request, $filePath, false);
-            }
-
-            $requestIsKnown = $fileExists || in_array($filePath, $this->prunedFiles);
-            if ($this->options->preventUnknownRealRequests() && ! $requestIsKnown) {
-                throw new PreventedRequestException($request, $filePath, true);
-            }
-        }
-
-        return $fileMocked;
+        return $fileExists && ! $this->options->renew();
     }
 
     protected function canSaveResponse(Response $response, string $filePath): bool
