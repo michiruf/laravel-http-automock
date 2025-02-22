@@ -264,14 +264,8 @@ it('can serialize all headers', function () {
     Http::get('http://localhost:9337/coffee/hot');
     Http::assertSentCount(1);
 
-    $mockContent = collect($headers)
-        ->map(fn ($value, $header) => "$header: $value")
-        ->prepend("HTTP/1.1 201 Created")
-        ->add("")
-        ->add("Hello")
-        ->join("\r\n");
     expect(File::exists($mockFilePath))->toBeTrue("File at $mockFilePath must exist")
-        ->and(File::get($mockFilePath))->toBe($mockContent);
+        ->and(File::get($mockFilePath))->toMatchSnapshot();
 });
 
 it('will not serialize headers when not specified', function () {

@@ -64,6 +64,11 @@
             "providers": [
                 "HttpAutomock\\HttpAutomockServiceProvider"
             ]
+        },
+        "pest": {
+            "plugins": [
+                "HttpAutomock\\Pest\\PestAutomockPlugin"
+            ]
         }
     },
     "minimum-stability": "dev",
