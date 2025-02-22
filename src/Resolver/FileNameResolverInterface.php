@@ -12,5 +12,5 @@ interface FileNameResolverInterface
      * @param  string  $directory  The directory the mock should get written to, might be handy to avoid file collisions
      * @return string File name
      */
-    function resolve(Request $request, bool $forWriting, string $directory): string;
+    public function resolve(Request $request, bool $forWriting, string $directory): string;
 }

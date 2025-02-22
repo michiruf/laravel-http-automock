@@ -20,10 +20,9 @@ class Resolver implements FileNameResolverInterface
 {
     public function __construct(
         protected Closure $callable
-    ) {
-    }
+    ) {}
 
-    function resolve(Request $request, bool $forWriting, string $directory): string
+    public function resolve(Request $request, bool $forWriting, string $directory): string
     {
         return $this->callable->call($this, $request, $forWriting, $directory);
     }

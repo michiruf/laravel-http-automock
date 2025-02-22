@@ -11,8 +11,7 @@ class PsrMessageSerializer implements PsrMessageSerializerInterface
     public function __construct(
         protected array $headers,
         protected bool $prettyPrintJson,
-    ) {
-    }
+    ) {}
 
     public function serialize(MessageInterface $message): string
     {

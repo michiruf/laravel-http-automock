@@ -44,7 +44,7 @@ class HttpAutomockOptions
     public function __construct(
         protected Repository $config,
     ) {
-        $this->commandArgs = collect((new ArgvInput())->getRawTokens());
+        $this->commandArgs = collect((new ArgvInput)->getRawTokens());
     }
 
     protected function hasCommandOption(string $argName): ?bool
@@ -61,10 +61,10 @@ class HttpAutomockOptions
     {
         /** @var Stringable $arg */
         $arg = collect($this->commandArgs)
-            ->map(fn(string $arg) => str($arg))
-            ->first(fn(Stringable $arg) => $arg->startsWith("--automock-$argName="));
+            ->map(fn (string $arg) => str($arg))
+            ->first(fn (Stringable $arg) => $arg->startsWith("--automock-$argName="));
 
-        if (!$arg) {
+        if (! $arg) {
             return null;
         }
 

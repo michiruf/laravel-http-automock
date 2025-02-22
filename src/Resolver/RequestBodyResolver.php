@@ -17,10 +17,9 @@ class RequestBodyResolver implements FileNameResolverInterface
         protected bool $sanitizeForFileSystems = true,
         protected ?string $hashMethod = null,
         protected ?int $substring = null,
-    ) {
-    }
+    ) {}
 
-    function resolve(Request $request, bool $forWriting, string $directory): string
+    public function resolve(Request $request, bool $forWriting, string $directory): string
     {
         $body = str($request->body());
 

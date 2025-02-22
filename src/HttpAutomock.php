@@ -27,8 +27,7 @@ class HttpAutomock
         protected HttpAutomockOptions $options,
         protected HttpAutomockFileNameResolver $fileNameResolver,
         protected MessageSerializerFactory $messageSerializerFactory,
-    ) {
-    }
+    ) {}
 
     public function enable(): static
     {
@@ -246,7 +245,7 @@ class HttpAutomock
             is_callable($url) => $alias
                 ? $this->options->filters[$alias] = $url
                 : $this->options->filters[] = $url,
-            default => throw new RuntimeException("Invalid filter type"),
+            default => throw new RuntimeException('Invalid filter type'),
         };
 
         return $this;

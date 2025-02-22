@@ -22,10 +22,9 @@ class CountResolver implements FileNameResolverInterface
 {
     public function __construct(
         public int $count = 1,
-    ) {
-    }
+    ) {}
 
-    function resolve(Request $request, bool $forWriting, string $directory): string
+    public function resolve(Request $request, bool $forWriting, string $directory): string
     {
         return $forWriting
             ? $this->count++

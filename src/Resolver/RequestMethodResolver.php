@@ -15,8 +15,7 @@ class RequestMethodResolver implements FileNameResolverInterface
 {
     public function __construct(
         protected bool $lowercase = false,
-    ) {
-    }
+    ) {}
 
     public function resolve(Request $request, bool $forWriting, string $directory): string
     {

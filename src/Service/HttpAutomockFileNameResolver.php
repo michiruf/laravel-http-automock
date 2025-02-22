@@ -2,8 +2,8 @@
 
 namespace HttpAutomock\Service;
 
-use HttpAutomock\Resolver\Resolver;
 use HttpAutomock\Resolver\FileNameResolverInterface;
+use HttpAutomock\Resolver\Resolver;
 use Illuminate\Config\Repository;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Foundation\Application;
@@ -17,8 +17,7 @@ class HttpAutomockFileNameResolver
     public function __construct(
         protected Container $container,
         protected Repository $config,
-    ) {
-    }
+    ) {}
 
     public function resolve(string|array|callable|FileNameResolverInterface $resolver, Request $request, bool $forWriting, string $directory): string
     {
@@ -71,6 +70,7 @@ class HttpAutomockFileNameResolver
 
     /**
      * @param  class-string  $class
+     *
      * @see static::forgetPreviousInstances() on how isntances get cleared
      */
     protected function resolveClassResolver(string $class, array $args): FileNameResolverInterface
@@ -85,7 +85,7 @@ class HttpAutomockFileNameResolver
         $resolverInstance = $this->container->make($class, $args);
 
         if (! $resolverInstance instanceof FileNameResolverInterface) {
-            throw new RuntimeException("Class resolver does not implement ".FileNameResolverInterface::class);
+            throw new RuntimeException('Class resolver does not implement '.FileNameResolverInterface::class);
         }
 
         return $resolverInstance;
@@ -104,7 +104,7 @@ class HttpAutomockFileNameResolver
      */
     public function forgetPreviousInstances(): void
     {
-        //$this->container->forgetScopedInstances();
+        // $this->container->forgetScopedInstances();
 
         // Unfortunately, using `app()->forgetScopedInstances();` does not work, so we simply remove previous instances manually
         // https://stackoverflow.com/questions/79424961/how-to-unset-scoped-instances-from-the-di-container-in-laravel

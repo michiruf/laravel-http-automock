@@ -13,8 +13,7 @@ class StringResolver implements FileNameResolverInterface
 {
     public function __construct(
         protected string $value,
-    ) {
-    }
+    ) {}
 
     public function resolve(Request $request, bool $forWriting, string $directory): string
     {

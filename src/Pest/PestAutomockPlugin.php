@@ -12,6 +12,7 @@ use Pest\Contracts\Plugins\HandlesArguments;
  * pest would throw an error that the options are unknown.
  *
  * @see          HttpAutomockOptions How the options retrieved
+ *
  * @noinspection PhpUnused
  */
 class PestAutomockPlugin implements HandlesArguments

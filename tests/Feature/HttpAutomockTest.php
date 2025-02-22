@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Pest\TestSuite;
+
 use function Orchestra\Testbench\package_path;
 use function Pest\testDirectory;
 
@@ -24,6 +25,7 @@ function mockFilePath(?string $filename = null): string
     if ($filename) {
         return $directoryPath.'/'.$filename;
     }
+
     return $directoryPath;
 }
 
@@ -140,7 +142,7 @@ it('can renew known requests', function () {
     expect(File::get($path))->not->toBeEmpty();
 });
 
-it('cannot renew unknown requests', function() {
+it('cannot renew unknown requests', function () {
     deletePreviousMock();
 
     Http::automock()
@@ -186,8 +188,8 @@ it('can specify filename resolution', function () {
                 '*' => [
                     'count',
                     fn (Request $request) => $request->method(),
-                    new Resolver(fn ($request, $forWriting, $directory) => 'TEST')
-                ]
+                    new Resolver(fn ($request, $forWriting, $directory) => 'TEST'),
+                ],
             ],
             'delimiter' => '_',
         ],
@@ -267,7 +269,7 @@ it('can serialize all headers', function () {
         'server-timing' => 'cfL4;desc="?proto=TCP&rtt=135730&min_rtt=135550&rtt_var=50960&sent=4&recv=5&lost=0&retrans=0&sent_bytes=2847&recv_bytes=699&delivery_rate=21423&cwnd=58&unsent_bytes=0&cid=081659bd52451ddd&ts=249&x=0"',
     ];
     Http::fake([
-        'http://localhost:9337/coffee/hot' => Http::response('Hello', 201, $headers)
+        'http://localhost:9337/coffee/hot' => Http::response('Hello', 201, $headers),
     ]);
 
     $mockFilePath = deletePreviousMock('4c147242.mock');

@@ -49,7 +49,7 @@ return [
         'stack' => [
             'resolver' => \HttpAutomock\Resolver\StackResolver::class,
             'filenameResolvers' => [
-                '*' => ['count', 'http_method', 'url_hash']
+                '*' => ['count', 'http_method', 'url_hash'],
             ],
             'delimiter' => '_',
         ],
@@ -66,7 +66,7 @@ return [
         'data_hash' => [
             'resolver' => \HttpAutomock\Resolver\RequestResolver::class,
             'hashMethod' => 'xxh32',
-        ]
+        ],
 
     ],
 

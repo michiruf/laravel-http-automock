@@ -6,7 +6,6 @@ use Illuminate\Http\Client\Request;
 /**
  * In all these example tests, please view the files that are specified in the File::exists assertion.
  */
-
 it('can do stuff with the api', function () {
     Http::automock();
     $response = Http::get('http://localhost:9337/coffee/hot')->json();

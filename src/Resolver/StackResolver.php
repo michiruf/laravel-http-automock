@@ -24,10 +24,9 @@ class StackResolver implements FileNameResolverInterface
         protected array $filenameResolvers,
         protected HttpAutomockFileNameResolver $httpAutomockFileNameResolver,
         protected ?string $delimiter = null,
-    ) {
-    }
+    ) {}
 
-    function resolve(Request $request, bool $forWriting, string $directory): string
+    public function resolve(Request $request, bool $forWriting, string $directory): string
     {
         // Receive the first set of resolvers that do match the url
         $stackResolvers = Arr::first($this->filenameResolvers, fn ($resolvers, $url) => Str::is(Str::start($url, '*'), $request->url()));

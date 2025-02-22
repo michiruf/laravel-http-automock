@@ -49,8 +49,7 @@ class RequestUrlResolver implements FileNameResolverInterface
         protected array $customTransformations = [],
         protected ?string $hashMethod = null,
         protected ?int $substring = null,
-    ) {
-    }
+    ) {}
 
     public function resolve(Request $request, bool $forWriting, string $directory): string
     {
