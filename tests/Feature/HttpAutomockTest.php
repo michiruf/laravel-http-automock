@@ -115,6 +115,27 @@ it('can renew responses', function () {
         ->and(Http::get('https://test')->body())->toBe('There');
 });
 
+it('prevents renewing when auto renew is prevented', function () {
+    $mockFilePath = deletePreviousMock('4c147242.mock');
+    $mockContent = "HTTP/1.1 200 OK\n\nFoo";
+    File::ensureDirectoryExists(dirname($mockFilePath));
+    File::put($mockFilePath, $mockContent);
+
+    config()->set('http-automock.renew', true);
+    Http::automock()->preventAutoRenew();
+    Http::get('http://localhost:9337/coffee/hot');
+
+    expect(File::get($mockFilePath))->toBe($mockContent);
+});
+
+it('allows manually renewing when auto renew is prevented', function () {
+    $mockDirectory = deletePreviousMock();
+
+    Http::automock()->preventAutoRenew()->renew();
+    Http::get('http://localhost:9337/coffee/hot');
+    expect(File::isDirectory($mockDirectory))->toBeTrue('Manually renewing should create mocks');
+});
+
 it('can prevent real requests', function () {
     deletePreviousMock();
 

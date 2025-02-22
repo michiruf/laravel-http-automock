@@ -26,6 +26,8 @@ class HttpAutomockOptions
 
     public ?bool $renew = null;
 
+    public bool $preventAutoRenew = false;
+
     public ?bool $mockHttpFakes = null;
 
     public array|bool|null $headers = null;
@@ -122,6 +124,7 @@ class HttpAutomockOptions
     public function renew(): bool
     {
         return $this->renew
+            ?? ($this->preventAutoRenew ? false : null)
             ?? $this->hasCommandOption('renew')
             ?? $this->config->get('http-automock.renew', false);
     }
