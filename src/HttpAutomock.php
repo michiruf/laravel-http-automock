@@ -92,19 +92,7 @@ class HttpAutomock
 
     protected function resolveFilePath(Request $request, bool $forWriting): string
     {
-        $testInstance = TestSuite::getInstance();
-        $relativePath = str($testInstance->getFilename())
-            ->remove($testInstance->rootPath.DIRECTORY_SEPARATOR.$testInstance->testPath)
-            ->beforeLast('.')
-            ->toString();
-        $description = $testInstance->getDescription();
-
-        $directory = str('')
-            ->append($testInstance->rootPath.DIRECTORY_SEPARATOR)
-            ->append($testInstance->testPath.DIRECTORY_SEPARATOR)
-            ->append($this->options->directory())
-            ->append($relativePath.DIRECTORY_SEPARATOR)
-            ->append($description.DIRECTORY_SEPARATOR);
+        $directory = str($this->testDirectory());
 
         $fileName = $this->fileNameResolver->resolve($this->options->fileNameResolver(), $request, $forWriting, $directory->value());
 
@@ -112,6 +100,24 @@ class HttpAutomock
             ->append($fileName)
             ->append($this->options->extension())
             ->toString();
+    }
+
+    protected function testDirectory(): string
+    {
+        $testInstance = TestSuite::getInstance();
+        $relativePath = str($testInstance->getFilename())
+            ->remove($testInstance->rootPath.DIRECTORY_SEPARATOR.$testInstance->testPath)
+            ->beforeLast('.')
+            ->toString();
+        $description = $testInstance->getDescription();
+
+        return str('')
+            ->append($testInstance->rootPath.DIRECTORY_SEPARATOR)
+            ->append($testInstance->testPath.DIRECTORY_SEPARATOR)
+            ->append($this->options->directory())
+            ->append($relativePath.DIRECTORY_SEPARATOR)
+            ->append($description.DIRECTORY_SEPARATOR)
+            ->value();
     }
 
     protected function requestFiltered(Request $request): bool
