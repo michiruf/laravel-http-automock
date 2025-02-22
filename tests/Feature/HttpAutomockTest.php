@@ -50,7 +50,9 @@ function isRealResponse(Response $response): bool
 }
 
 beforeEach(function () {
-    Http::configureAutomock()->resolveFileNameUsing('url_hash');
+    Http::configureAutomock()
+        ->resolveFileNameUsing('url_hash')
+        ->mockHttpFakes();
 });
 
 it('can automock requests', function () {
@@ -146,6 +148,17 @@ it('cannot renew unknown requests', function() {
         ->renew();
     Http::get('http://localhost:9337/coffee/hot');
 })->throws(RuntimeException::class, 'Tried to send an unknown real request that was prevented');
+
+it('can avoid mocking http fakes', function () {
+    $mockDirectory = deletePreviousMock();
+
+    Http::automock()->mockHttpFakes(false);
+    Http::fake([
+        'https://test' => Http::response('Hello'),
+    ]);
+    expect(Http::get('https://test')->body())->toBe('Hello')
+        ->and(File::isDirectory($mockDirectory))->toBeFalse('Fake mock should not get created');
+});
 
 it('can specify filename resolution', function () {
     Http::fake([
