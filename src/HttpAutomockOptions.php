@@ -28,6 +28,8 @@ class HttpAutomockOptions
 
     public bool $preventAutoRenew = false;
 
+    public ?bool $prune = null;
+
     public ?bool $mockHttpFakes = null;
 
     public array|bool|null $headers = null;
@@ -127,6 +129,18 @@ class HttpAutomockOptions
             ?? ($this->preventAutoRenew ? false : null)
             ?? $this->hasCommandOption('renew')
             ?? $this->config->get('http-automock.renew', false);
+    }
+
+    public function pruneOnce(): bool
+    {
+        $value = $this->prune
+            ?? $this->hasCommandOption('prune')
+            ?? $this->config->get('http-automock.prune', false);
+
+        // Set the prune flag back to false, so we do not perform pruning twice
+        $this->prune = false;
+
+        return $value;
     }
 
     public function mockHttpFakes(): bool

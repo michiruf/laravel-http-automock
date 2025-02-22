@@ -136,6 +136,44 @@ it('allows manually renewing when auto renew is prevented', function () {
     expect(File::isDirectory($mockDirectory))->toBeTrue('Manually renewing should create mocks');
 });
 
+it('can prune mocks immediately', function () {
+    $mockFilePath = mockFilePath('foo.mock');
+    File::ensureDirectoryExists(dirname($mockFilePath));
+    File::put($mockFilePath, 'Foo');
+
+    Http::automock()->prune();
+
+    expect(File::exists($mockFilePath))->toBeFalse('Mock file was not pruned');
+});
+
+it('can prune mocks on demand via config', function () {
+    deletePreviousMock();
+    $mockFilePath = mockFilePath('foo.mock');
+    File::ensureDirectoryExists(dirname($mockFilePath));
+    File::put($mockFilePath, 'Foo');
+
+    config()->set('http-automock.prune', true);
+    Http::automock();
+    Http::get('http://localhost:9337/coffee/hot');
+
+    expect(File::exists($mockFilePath))->toBeFalse('Old mock should not exist')
+        ->and(File::exists(mockFilePath('4c147242.mock')))->toBeTrue('New mock should exist');
+
+    // Also check that pruning will only be performed once
+    Http::preventStrayRequests();
+    Http::get('http://localhost:9337/coffee/hot');
+});
+
+it('can prune mocks and renew known', function () {
+    deletePreviousMock();
+
+    Http::automock();
+    Http::get('http://localhost:9337/coffee/hot');
+
+    Http::automock()->prune()->preventUnknownRealRequests();
+    Http::get('http://localhost:9337/coffee/hot');
+});
+
 it('can prevent real requests', function () {
     deletePreviousMock();
 
