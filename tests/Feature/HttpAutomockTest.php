@@ -1,5 +1,6 @@
 <?php
 
+use HttpAutomock\Exceptions\PreventedRequestException;
 use HttpAutomock\Resolver\CountResolver;
 use HttpAutomock\Resolver\Resolver;
 use HttpAutomock\Resolver\StackResolver;
@@ -179,14 +180,14 @@ it('can prevent real requests', function () {
 
     Http::automock()->preventRealRequests();
     Http::get('http://localhost:9337/coffee/hot');
-})->throws(RuntimeException::class, 'Tried to send a real request that was prevented');
+})->throws(PreventedRequestException::class, 'Tried to send a real request that was prevented', 1);
 
 it('can prevent unknown real requests', function () {
     deletePreviousMock();
 
     Http::automock()->preventUnknownRealRequests();
     Http::get('http://localhost:9337/coffee/hot');
-})->throws(RuntimeException::class, 'Tried to send an unknown real request that was prevented');
+})->throws(PreventedRequestException::class, 'Tried to send an unknown real request that was prevented', 2);
 
 it('can renew known requests', function () {
     $path = deletePreviousMock('4c147242.mock');
