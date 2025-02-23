@@ -1,6 +1,8 @@
 <?php
 
+use HttpAutomock\Exceptions\PreventedRequestException;
 use HttpAutomock\Resolver\RequestUrlResolver;
+use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
 use Illuminate\Http\Client\Request;
 
 /**
@@ -64,12 +66,12 @@ it('can renew responses', function () {
 it('can prevent real requests', function () {
     Http::automock()->preventRealRequests();
     Http::get('http://localhost:9337/coffee/hot');
-})->throws(RuntimeException::class, 'Tried to send a real request that was prevented');
+})->throws(PreventedRequestException::class, 'Tried to send a real request that was prevented', 1);
 
 it('can prevent unknown real requests', function () {
     Http::automock()->preventUnknownRealRequests();
     Http::get('http://localhost:9337/coffee/hot');
-})->throws(RuntimeException::class, 'Tried to send an unknown real request that was prevented');
+})->throws(PreventedRequestException::class, 'Tried to send an unknown real request that was prevented', 2);
 
 it('can renew known requests', function () {
     $path = 'tests/.pest/automock/Feature/ExampleUsageTest/it_can_renew_known_requests/1_GET_4c147242.mock';

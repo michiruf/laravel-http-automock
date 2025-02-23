@@ -4,6 +4,7 @@ namespace HttpAutomock;
 
 use Closure;
 use GuzzleHttp\Promise\Create;
+use HttpAutomock\Exceptions\PreventedRequestException;
 use HttpAutomock\Resolver\FileNameResolverInterface;
 use HttpAutomock\Serialization\MessageSerializerFactory;
 use HttpAutomock\Service\HttpAutomockFileNameResolver;
@@ -17,7 +18,6 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Pest\TestSuite;
-use RuntimeException;
 use SplFileInfo;
 
 class HttpAutomock
@@ -158,12 +158,12 @@ class HttpAutomock
 
         if (! $fileMocked) {
             if ($this->options->preventRealRequests()) {
-                throw new RuntimeException("Tried to send a real request that was prevented, url: {$request->url()}, file: $filePath");
+                throw new PreventedRequestException($request, $filePath, false);
             }
 
             $requestIsKnown = $fileExists || in_array($filePath, $this->prunedFiles);
             if ($this->options->preventUnknownRealRequests() && ! $requestIsKnown) {
-                throw new RuntimeException("Tried to send an unknown real request that was prevented, url: {$request->url()}, file: $filePath");
+                throw new PreventedRequestException($request, $filePath, true);
             }
         }
 
@@ -296,7 +296,6 @@ class HttpAutomock
             is_callable($url) => $alias
                 ? $this->options->filters[$alias] = $url
                 : $this->options->filters[] = $url,
-            default => throw new RuntimeException('Invalid filter type'),
         };
 
         return $this;
