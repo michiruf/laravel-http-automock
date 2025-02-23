@@ -133,7 +133,9 @@ class HttpAutomockOptions
 
     public function pruneOnce(): bool
     {
+        // preventAutoRenew also disables pruning, since it is also a renewing action
         $value = $this->prune
+            ?? ($this->preventAutoRenew ? false : null)
             ?? $this->hasCommandOption('prune')
             ?? $this->config->get('http-automock.prune', false);
 
