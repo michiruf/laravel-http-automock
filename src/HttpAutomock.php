@@ -2,7 +2,6 @@
 
 namespace HttpAutomock;
 
-use Closure;
 use GuzzleHttp\Promise\Create;
 use HttpAutomock\Event\RealRequestSendingEvent;
 use HttpAutomock\Exceptions\PreventedRequestException;
@@ -203,7 +202,7 @@ class HttpAutomock
         File::deleteDirectory($directory);
     }
 
-    public function resolveFileNameUsing(string|Closure|FileNameResolverInterface|null $resolver): static
+    public function resolveFileNameUsing(string|callable|FileNameResolverInterface|null $resolver): static
     {
         $this->fileNameResolver->forgetPreviousInstances();
         $this->options->fileNameResolver = $resolver;
