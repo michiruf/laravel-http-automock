@@ -183,8 +183,8 @@ it('can fail validating mocks', function () {
             Http::response('There'),
         ]),
     ]);
-    Http::automock()->validateMocks();
 
+    Http::automock()->validateMocks();
     Http::get('https://test'); // creates the mock
     Http::get('https://test'); // validates the mock
 })->throws(ExpectationFailedException::class, 'Failed asserting that two strings are identical.');

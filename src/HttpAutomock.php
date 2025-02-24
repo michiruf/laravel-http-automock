@@ -19,7 +19,6 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Pest\TestSuite;
 use Psr\Http\Message\MessageInterface;
-use Psr\Http\Message\ResponseInterface;
 use SplFileInfo;
 
 class HttpAutomock
@@ -197,10 +196,6 @@ class HttpAutomock
 
     protected function canSaveResponse(Response $response, string $filePath): bool
     {
-        if ($this->options->validateMocks()) {
-            return false;
-        }
-
         $isFake = empty($response->handlerStats());
         if ($isFake && ! $this->options->mockHttpFakes()) {
             return false;
