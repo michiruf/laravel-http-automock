@@ -46,5 +46,3 @@ it('can do stuff with the api', function () {
 * Update all automocks invoking the test command with option `--update` or `--update-automocks`
 * Mocks that should be reused for all test methods should be definable. Maybe by specifying a scope for specific
   requests?
-* > [!CAUTION]
-  > `preventRealRequests` does not allow manually specified `Http::fake` calls
