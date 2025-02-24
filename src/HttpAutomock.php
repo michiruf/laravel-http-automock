@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Pest\TestSuite;
+use Psr\Http\Message\MessageInterface;
 use SplFileInfo;
 
 class HttpAutomock
@@ -37,7 +38,7 @@ class HttpAutomock
         $this->options->enabled = true;
 
         if (! $this->registered) {
-            $this->registerFakeHandler();
+            $this->registerMockHandler();
             $this->registerPreventRequestsHandler();
             $this->registerResponseHandler();
             $this->registered = true;
@@ -53,7 +54,7 @@ class HttpAutomock
         return $this;
     }
 
-    protected function registerFakeHandler(): void
+    protected function registerMockHandler(): void
     {
         Http::fake(function (Request $request) {
             if (! $this->options->enabled() || $this->requestFiltered($request)) {
@@ -66,9 +67,9 @@ class HttpAutomock
 
             $filePath = $this->resolveMockPath($request, false);
 
-            if ($this->canFakeRequestForFile($filePath)) {
+            if ($this->canMockRequestForFile($filePath)) {
                 $fileContent = File::get($filePath);
-                $response = $this->messageSerializerFactory->deserialize($fileContent);
+                $response = $this->deserializeResponse($fileContent);
 
                 return Create::promiseFor($response);
             }
@@ -108,20 +109,19 @@ class HttpAutomock
                 return null;
             }
 
+            $filePath = $this->resolveMockPath($event->request, true);
+
+            if ($this->options->validateMocks() && File::exists($filePath)) {
+                expect(File::get($filePath))->toBe($this->serializeResponse($event->response));
+            }
+
             if ($this->options->pruneOnce()) {
                 $this->performPruning();
             }
 
-            $filePath = $this->resolveMockPath($event->request, true);
-
             if ($this->canSaveResponse($event->response, $filePath)) {
-                $fileContent = $this->messageSerializerFactory
-                    ->withHeaders($this->options->headers())
-                    ->prettyPrintJson($this->options->jsonPrettyPrint())
-                    ->serialize($event->response->toPsrResponse());
-
                 File::ensureDirectoryExists(dirname($filePath));
-                File::put($filePath, $fileContent);
+                File::put($filePath, $this->serializeResponse($event->response));
             }
         });
     }
@@ -174,11 +174,24 @@ class HttpAutomock
         return false;
     }
 
-    protected function canFakeRequestForFile(string $filePath): bool
+    protected function serializeResponse(Response $response): string
+    {
+        return $this->messageSerializerFactory
+            ->withHeaders($this->options->headers())
+            ->prettyPrintJson($this->options->jsonPrettyPrint())
+            ->serialize($response->toPsrResponse());
+    }
+
+    protected function deserializeResponse(string $response): MessageInterface
+    {
+        return $this->messageSerializerFactory->deserialize($response);
+    }
+
+    protected function canMockRequestForFile(string $filePath): bool
     {
         $fileExists = File::exists($filePath);
 
-        return $fileExists && ! $this->options->renew();
+        return $fileExists && ! $this->options->renew() && ! $this->options->validateMocks();
     }
 
     protected function canSaveResponse(Response $response, string $filePath): bool
@@ -267,6 +280,13 @@ class HttpAutomock
         }
 
         $this->options->prune = $prune;
+
+        return $this;
+    }
+
+    public function validateMocks(?bool $validate = true): static
+    {
+        $this->options->validateMocks = $validate;
 
         return $this;
     }

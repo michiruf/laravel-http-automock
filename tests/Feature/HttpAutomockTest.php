@@ -1,5 +1,6 @@
 <?php
 
+use HttpAutomock\Exceptions\InvalidMockException;
 use HttpAutomock\Exceptions\PreventedRequestException;
 use HttpAutomock\Resolver\CountResolver;
 use HttpAutomock\Resolver\Resolver;
@@ -11,6 +12,8 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Pest\TestSuite;
+
+use PHPUnit\Framework\ExpectationFailedException;
 
 use function Orchestra\Testbench\package_path;
 use function Pest\testDirectory;
@@ -164,6 +167,27 @@ it('can prune mocks on demand via config', function () {
     Http::preventStrayRequests();
     Http::get('http://localhost:9337/coffee/hot');
 });
+
+it('can happily validate mocks', function () {
+    deletePreviousMock();
+
+    Http::automock()->validateMocks();
+    Http::get('http://localhost:9337/coffee/hot'); // creates the mock
+    Http::get('http://localhost:9337/coffee/hot'); // validates the mock
+});
+
+it('can fail validating mocks', function () {
+    Http::fake([
+        'https://test' => Http::sequence([
+            Http::response('Hello'),
+            Http::response('There'),
+        ]),
+    ]);
+
+    Http::automock()->validateMocks();
+    Http::get('https://test'); // creates the mock
+    Http::get('https://test'); // validates the mock
+})->throws(ExpectationFailedException::class, 'Failed asserting that two strings are identical.');
 
 it('can prune mocks and renew known', function () {
     deletePreviousMock();
