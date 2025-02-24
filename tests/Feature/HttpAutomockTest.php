@@ -1,6 +1,5 @@
 <?php
 
-use HttpAutomock\Exceptions\InvalidMockException;
 use HttpAutomock\Exceptions\PreventedRequestException;
 use HttpAutomock\Resolver\CountResolver;
 use HttpAutomock\Resolver\Resolver;
@@ -12,7 +11,6 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Pest\TestSuite;
-
 use PHPUnit\Framework\ExpectationFailedException;
 
 use function Orchestra\Testbench\package_path;

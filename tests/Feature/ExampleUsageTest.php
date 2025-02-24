@@ -2,7 +2,6 @@
 
 use HttpAutomock\Exceptions\PreventedRequestException;
 use HttpAutomock\Resolver\RequestUrlResolver;
-use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
 use Illuminate\Http\Client\Request;
 
 /**
