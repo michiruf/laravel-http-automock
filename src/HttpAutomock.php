@@ -39,7 +39,7 @@ class HttpAutomock
         $this->options->enabled = true;
 
         if (! $this->registered) {
-            $this->registerFakeHandler();
+            $this->registerMockHandler();
             $this->registerPreventRequestsHandler();
             $this->registerResponseHandler();
             $this->registered = true;
@@ -55,7 +55,7 @@ class HttpAutomock
         return $this;
     }
 
-    protected function registerFakeHandler(): void
+    protected function registerMockHandler(): void
     {
         Http::fake(function (Request $request) {
             if (! $this->options->enabled() || $this->requestFiltered($request)) {
@@ -68,7 +68,7 @@ class HttpAutomock
 
             $filePath = $this->resolveMockPath($request, false);
 
-            if ($this->canFakeRequestForFile($filePath)) {
+            if ($this->canMockRequestForFile($filePath)) {
                 $fileContent = File::get($filePath);
                 $response = $this->deserializeResponse($fileContent);
 
@@ -188,7 +188,7 @@ class HttpAutomock
         return $this->messageSerializerFactory->deserialize($response);
     }
 
-    protected function canFakeRequestForFile(string $filePath): bool
+    protected function canMockRequestForFile(string $filePath): bool
     {
         $fileExists = File::exists($filePath);
 
