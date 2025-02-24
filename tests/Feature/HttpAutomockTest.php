@@ -182,6 +182,28 @@ it('can prevent real requests', function () {
     Http::get('http://localhost:9337/coffee/hot');
 })->throws(PreventedRequestException::class, 'Tried to send a real request that was prevented', 1);
 
+it('will allow faked requests when preventing real requests', function () {
+    deletePreviousMock();
+
+    Http::fake([
+        'https://test' => Http::response('Hello'),
+    ]);
+
+    Http::automock()->preventRealRequests();
+    Http::get('https://test');
+});
+
+it('will allow faked requests when preventing unknown real requests', function () {
+    deletePreviousMock();
+
+    Http::fake([
+        'https://test' => Http::response('Hello'),
+    ]);
+
+    Http::automock()->preventUnknownRealRequests();
+    Http::get('https://test');
+});
+
 it('can prevent unknown real requests', function () {
     deletePreviousMock();
 
