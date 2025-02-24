@@ -106,7 +106,7 @@ class HttpAutomock
     {
         Event::listen(function (ResponseReceived $event) {
             if (! $this->options->enabled() || $this->requestFiltered($event->request)) {
-                return null;
+                return;
             }
 
             $filePath = $this->resolveMockPath($event->request, true);
