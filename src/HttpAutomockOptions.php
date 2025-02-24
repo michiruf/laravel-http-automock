@@ -30,6 +30,8 @@ class HttpAutomockOptions
 
     public ?bool $prune = null;
 
+    public ?bool $validateMocks = null;
+
     public ?bool $mockHttpFakes = null;
 
     public array|bool|null $headers = null;
@@ -143,6 +145,14 @@ class HttpAutomockOptions
         $this->prune = false;
 
         return $value;
+    }
+
+    public function validateMocks(): bool
+    {
+        return $this->validateMocks
+            ?? ($this->preventAutoRenew ? false : null)
+            ?? $this->hasCommandOption('validate-mocks')
+            ?? $this->config->get('http-automock.validate_mocks', false);
     }
 
     public function mockHttpFakes(): bool

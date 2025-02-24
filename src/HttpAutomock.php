@@ -108,20 +108,19 @@ class HttpAutomock
                 return null;
             }
 
+            $filePath = $this->resolveMockPath($event->request, true);
+
+            if ($this->options->validateMocks() && File::exists($filePath)) {
+                expect(File::get($filePath))->toBe($this->serializeResponse($event->response));
+            }
+
             if ($this->options->pruneOnce()) {
                 $this->performPruning();
             }
 
-            $filePath = $this->resolveMockPath($event->request, true);
-
             if ($this->canSaveResponse($event->response, $filePath)) {
-                $fileContent = $this->messageSerializerFactory
-                    ->withHeaders($this->options->headers())
-                    ->prettyPrintJson($this->options->jsonPrettyPrint())
-                    ->serialize($event->response->toPsrResponse());
-
                 File::ensureDirectoryExists(dirname($filePath));
-                File::put($filePath, $fileContent);
+                File::put($filePath, $this->serializeResponse($event->response));
             }
         });
     }
@@ -174,15 +173,27 @@ class HttpAutomock
         return false;
     }
 
+    protected function serializeResponse(Response $response): string
+    {
+        return $this->messageSerializerFactory
+            ->withHeaders($this->options->headers())
+            ->prettyPrintJson($this->options->jsonPrettyPrint())
+            ->serialize($response->toPsrResponse());
+    }
+
     protected function canFakeRequestForFile(string $filePath): bool
     {
         $fileExists = File::exists($filePath);
 
-        return $fileExists && ! $this->options->renew();
+        return $fileExists && ! $this->options->renew() && ! $this->options->validateMocks();
     }
 
     protected function canSaveResponse(Response $response, string $filePath): bool
     {
+        if ($this->options->validateMocks()) {
+            return false;
+        }
+
         $isFake = empty($response->handlerStats());
         if ($isFake && ! $this->options->mockHttpFakes()) {
             return false;
@@ -267,6 +278,13 @@ class HttpAutomock
         }
 
         $this->options->prune = $prune;
+
+        return $this;
+    }
+
+    public function validateMocks(?bool $validate = true): static
+    {
+        $this->options->validateMocks = $validate;
 
         return $this;
     }
