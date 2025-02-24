@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Pest\TestSuite;
+use Psr\Http\Message\MessageInterface;
+use Psr\Http\Message\ResponseInterface;
 use SplFileInfo;
 
 class HttpAutomock
@@ -68,7 +70,7 @@ class HttpAutomock
 
             if ($this->canFakeRequestForFile($filePath)) {
                 $fileContent = File::get($filePath);
-                $response = $this->messageSerializerFactory->deserialize($fileContent);
+                $response = $this->deserializeResponse($fileContent);
 
                 return Create::promiseFor($response);
             }
@@ -179,6 +181,11 @@ class HttpAutomock
             ->withHeaders($this->options->headers())
             ->prettyPrintJson($this->options->jsonPrettyPrint())
             ->serialize($response->toPsrResponse());
+    }
+
+    protected function deserializeResponse(string $response): MessageInterface
+    {
+        return $this->messageSerializerFactory->deserialize($response);
     }
 
     protected function canFakeRequestForFile(string $filePath): bool
