@@ -159,6 +159,9 @@ it('can prune mocks immediately', function () {
 
     Http::automock()->prune();
 
+    // Call twice to ensure no error occurs
+    Http::automock()->prune();
+
     expect(File::exists($mockFilePath))->toBeFalse('Mock file was not pruned');
 });
 

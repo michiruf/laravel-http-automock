@@ -212,6 +212,10 @@ class HttpAutomock
     {
         $directory = $this->testDirectory();
 
+        if (! File::isDirectory($directory)) {
+            return;
+        }
+
         $this->prunedFiles = collect(File::allFiles($directory))
             ->map(fn (SplFileInfo $file) => $file->getPathname())
             ->toArray();
