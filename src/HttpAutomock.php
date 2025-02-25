@@ -85,6 +85,11 @@ class HttpAutomock
                 return;
             }
 
+            // Cancel early to avoid resolving the file path
+            if (! $this->options->preventRealRequests() && ! $this->options->preventUnknownRealRequests()) {
+                return;
+            }
+
             $filePath = $this->resolveMockPath($event->request, false);
             $fileExists = File::exists($filePath);
 
