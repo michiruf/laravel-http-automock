@@ -5,6 +5,7 @@ namespace HttpAutomock\LaravelHttp;
 use HttpAutomock\Event\RealRequestSendingEvent;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\PendingRequest as LaravelPendingRequest;
+use Illuminate\Http\Client\Request;
 
 class PendingRequest extends LaravelPendingRequest
 {
@@ -26,7 +27,10 @@ class PendingRequest extends LaravelPendingRequest
     {
         return function ($handler) {
             return function ($request, $options) use ($handler) {
-                event(new RealRequestSendingEvent($request));
+                // Construct the request like it is done int the stub handler
+                $laravelRequest = (new Request($request))->withData($options['laravel_data']);
+
+                event(new RealRequestSendingEvent($laravelRequest));
 
                 return $handler($request, $options);
             };

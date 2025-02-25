@@ -2,11 +2,11 @@
 
 namespace HttpAutomock\Event;
 
-use Psr\Http\Message\RequestInterface;
+use Illuminate\Http\Client\Request;
 
 class RealRequestSendingEvent
 {
     public function __construct(
-        public RequestInterface $request,
+        public Request $request,
     ) {}
 }

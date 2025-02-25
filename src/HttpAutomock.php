@@ -81,22 +81,21 @@ class HttpAutomock
     protected function registerPreventRequestsHandler(): void
     {
         Event::listen(RealRequestSendingEvent::class, function (RealRequestSendingEvent $event) {
-            $request = new Request($event->request);
-            if (! $this->options->enabled() || $this->requestFiltered($request)) {
+            if (! $this->options->enabled() || $this->requestFiltered($event->request)) {
                 return;
             }
 
-            $filePath = $this->resolveMockPath($request, false);
+            $filePath = $this->resolveMockPath($event->request, false);
             $fileExists = File::exists($filePath);
 
             if (! $fileExists) {
                 if ($this->options->preventRealRequests()) {
-                    throw new PreventedRequestException($request, $filePath, false);
+                    throw new PreventedRequestException($event->request, $filePath, false);
                 }
 
                 $requestIsKnown = in_array($filePath, $this->prunedFiles);
                 if ($this->options->preventUnknownRealRequests() && ! $requestIsKnown) {
-                    throw new PreventedRequestException($request, $filePath, true);
+                    throw new PreventedRequestException($event->request, $filePath, true);
                 }
             }
         });
