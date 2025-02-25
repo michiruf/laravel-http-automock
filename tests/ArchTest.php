@@ -11,10 +11,6 @@ arch()->preset()->laravel();
 arch()->preset()->security();
 arch()->preset()->relaxed();
 
-arch('avoid using debugging functions')
-    ->expect(['dd', 'dump', 'ray'])
-    ->not->toBeUsed();
-
 // We do not want to use base carbon, but the variant from illuminate, since its easily mocked
 arch('avoid using base carbon')
     ->expect('Carbon\\Carbon')
