@@ -115,7 +115,7 @@ it('can mock using query parameters', function () {
     Http::get('http://localhost:9337/coffee/hot', ['foo2' => 'bar']);
 
     expect(File::exists("$mockDirectory/foo1-bar.mock"))->toBeTrue()
-        -> and(File::exists("$mockDirectory/foo2-bar.mock"))->toBeTrue();
+        ->and(File::exists("$mockDirectory/foo2-bar.mock"))->toBeTrue();
 });
 
 it('can renew responses', function () {
