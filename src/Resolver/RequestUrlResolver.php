@@ -77,7 +77,7 @@ class RequestUrlResolver implements FileNameResolverInterface
 
         $url = str(Uri::composeComponents(
             $this->scheme ? $uri->getScheme() : null,
-            $authority?->value() ?: null,
+            $authority->value() ?: null,
             $this->path ? $uri->getPath() : null,
             $this->query ? $uri->getQuery() : null,
             $this->fragment ? $uri->getFragment() : null,
