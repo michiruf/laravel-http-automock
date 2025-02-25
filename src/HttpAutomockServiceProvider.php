@@ -3,7 +3,9 @@
 namespace HttpAutomock;
 
 use HttpAutomock\Support\HttpAutomockMixin;
+use HttpAutomock\Support\RequestMixin;
 use Illuminate\Http\Client\Factory;
+use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -24,5 +26,6 @@ class HttpAutomockServiceProvider extends PackageServiceProvider
         Http::swap(new LaravelHttp\Factory($root->getDispatcher()));
 
         Http::mixin(new HttpAutomockMixin);
+        Request::mixin(new RequestMixin);
     }
 }

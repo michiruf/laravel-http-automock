@@ -104,6 +104,20 @@ it('can mock when http fake is used #2', function () {
         ->and(File::isDirectory($mockDirectory))->toBeTrue('Set up wrong directory in test');
 });
 
+it('can mock using query parameters', function () {
+    $mockDirectory = deletePreviousMock();
+
+    Http::automock()
+        ->resolveFileNameUsing(fn (Request $request) => $request->collectQuery()->map(fn ($value, $key) => "$key-$value")->values()->join('_'));
+
+    Http::withQueryParameters(['foo1' => 'bar'])
+        ->get('http://localhost:9337/coffee/hot');
+    Http::get('http://localhost:9337/coffee/hot', ['foo2' => 'bar']);
+
+    expect(File::exists("$mockDirectory/foo1-bar.mock"))->toBeTrue()
+        -> and(File::exists("$mockDirectory/foo2-bar.mock"))->toBeTrue();
+});
+
 it('can renew responses', function () {
     Http::automock()->renew();
     Http::fake([
