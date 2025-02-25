@@ -12,8 +12,6 @@ class HttpAutomockMixin
     {
         /**
          * Automatically mock requests.
-         *
-         * @return HttpAutomock
          */
         return function (): HttpAutomock {
             return HttpAutomockFacade::enable();
@@ -25,8 +23,6 @@ class HttpAutomockMixin
     {
         /**
          * Disable automatically mocking requests.
-         *
-         * @return HttpAutomock
          */
         return function (): HttpAutomock {
             return HttpAutomockFacade::disable();
@@ -38,8 +34,6 @@ class HttpAutomockMixin
     {
         /**
          * Return the automock instance to configure it.
-         *
-         * @return HttpAutomock
          */
         return function (): HttpAutomock {
             return HttpAutomockFacade::getFacadeRoot();
