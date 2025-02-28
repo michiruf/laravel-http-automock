@@ -53,6 +53,13 @@ Features are just a rough idea, whereas TODOs should get implemented at some poi
 * TODO: Optionally remove pests closure naming (`__Closure_Object__`) in the test directory path `it_can_foo_with_data_set__dataset__foo____Closure_Object_______`
 * TODO: Optionally remove pests multiple underscores (`___`) in the test directory path
 * TODO: Think about an opt-in approach rather than an opt-out for auto-renew
+* TODO: Think about adding more easy resolvers
+  * http method (exists)
+  * http domain/host
+  * http domain/host without subdomain
+  * http path
+  * more easy hash resolver (however this is possible)
+* FEATURE: Use Macroable in automock
 
 ## Troubleshooting
 
