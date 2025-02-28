@@ -203,7 +203,7 @@ class HttpAutomockOptions
     public function urlFilters(): array
     {
         return $this->urlFilters
-            ?? $this->hasCommandOption('url-filters')
+            ?? $this->commandArg('url-filters', fn (string $value) => explode(',', $value))
             ?? $this->config->get('http-automock.url_filters', []);
     }
 
