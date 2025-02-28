@@ -37,12 +37,46 @@ it('can do stuff with the api', function () {
 });
 ```
 
-## Features that could get implemented
+## Features & TODOs
 
-* Skip or retry specific responses, e.g. when a 429 error or rate limits occur. Maybe by using one of these approaches:
+In this list, features and TODOs can get noted that come up during usage, development and feedback.
+Features are just a rough idea, whereas TODOs should get implemented at some point.
+
+* FEATURE: Skip or retry specific responses, e.g. when a 429 error or rate limits occur. Maybe by using one of these approaches:
     * New `retryRequestsUntil` method
     * New `renewUntil` - Repeat renewing until the response contains sth.
-* Clear all automocks invoking the test command with option `--prune` or `--prune-automocks`
-* Update all automocks invoking the test command with option `--update` or `--update-automocks`
-* Mocks that should be reused for all test methods should be definable. Maybe by specifying a scope for specific
+* FEATURE: Mocks that should be reused for all test methods should be definable. Maybe by specifying a scope for specific
   requests?
+* FEATURE: Configure all options like prevent, renew, ... on a requests basis
+* FEATURE: Allow additional persistance of the request (for transparency reasons, not for functionality)
+* TODO: Resolving multiple Resolvers of one type in a stack resolver will only instantiate one
+* TODO: Optionally remove pests closure naming (`__Closure_Object__`) in the test directory path `it_can_foo_with_data_set__dataset__foo____Closure_Object_______`
+* TODO: Optionally remove pests multiple underscores (`___`) in the test directory path
+* TODO: Think about an opt-in approach rather than an opt-out for auto-renew
+
+## Troubleshooting
+
+### Windows git long paths
+
+It might be recommended / essential to use git long paths when generating long file names.
+To do so, execute
+
+```shell
+git config --global core.longpaths true
+```
+
+if you want to enable long paths in general or
+
+```shell
+git config core.longpaths true
+```
+
+to enable long paths in the project.
+
+Validate the setting via
+
+```shell
+git config --list --show-origin
+```
+
+For more information see [here](https://stackoverflow.com/questions/22575662/filename-too-long-in-git-for-windows).
