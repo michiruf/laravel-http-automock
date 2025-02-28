@@ -13,7 +13,7 @@ This package currently only works using [Pest](https://pestphp.com/) and laravel
 ## Installation
 
 ```shell
-composer require michiruf/laravel-http-automock
+composer require michiruf/laravel-http-automock --dev
 ```
 
 Publish the config:
