@@ -212,6 +212,7 @@ class HttpAutomockOptions
      */
     public function filters(): array
     {
-        return $this->filters ?? [];
+        return $this->filters
+            ?? $this->config->get('http-automock.filters', []);
     }
 }
