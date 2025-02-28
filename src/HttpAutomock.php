@@ -85,23 +85,20 @@ class HttpAutomock
                 return;
             }
 
-            // Cancel early to avoid resolving the file path
+            // Cancel early to avoid unnecessary resolving the file path
             if (! $this->options->preventRealRequests() && ! $this->options->preventUnknownRealRequests()) {
                 return;
             }
 
             $filePath = $this->resolveMockPath($event->request, false);
-            $fileExists = File::exists($filePath);
 
-            if (! $fileExists) {
-                if ($this->options->preventRealRequests()) {
-                    throw new PreventedRequestException($event->request, $filePath, false);
-                }
+            if ($this->options->preventRealRequests() && ! $this->canMockRequestForFile($filePath)) {
+                throw new PreventedRequestException($event->request, $filePath, false);
+            }
 
-                $requestIsKnown = in_array($filePath, $this->prunedFiles);
-                if ($this->options->preventUnknownRealRequests() && ! $requestIsKnown) {
-                    throw new PreventedRequestException($event->request, $filePath, true);
-                }
+            $requestIsKnown = File::exists($filePath) || in_array($filePath, $this->prunedFiles);
+            if ($this->options->preventUnknownRealRequests() && ! $requestIsKnown) {
+                throw new PreventedRequestException($event->request, $filePath, true);
             }
         });
     }
