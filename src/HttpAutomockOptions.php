@@ -26,7 +26,7 @@ class HttpAutomockOptions
 
     public ?bool $renew = null;
 
-    public bool $preventAutoRenew = false;
+    public ?bool $preventAutoRenew = false;
 
     public ?bool $prune = null;
 
@@ -128,16 +128,23 @@ class HttpAutomockOptions
     public function renew(): bool
     {
         return $this->renew
-            ?? ($this->preventAutoRenew ? false : null)
+            ?? ($this->preventAutoRenew() ? false : null)
             ?? $this->hasCommandOption('renew')
             ?? $this->config->get('http-automock.renew', false);
     }
 
+    public function preventAutoRenew(): bool
+    {
+        return $this->preventAutoRenew
+            ?? $this->hasCommandOption('prevent-auto-renew')
+            ?? $this->config->get('http-automock.prevent_auto_renew', false);
+    }
+
     public function pruneOnce(): bool
     {
-        // preventAutoRenew also disables pruning, since it is also a renewing action
+        // preventAutoRenew also disables pruning, since it is also an action with a real request
         $value = $this->prune
-            ?? ($this->preventAutoRenew ? false : null)
+            ?? ($this->preventAutoRenew() ? false : null)
             ?? $this->hasCommandOption('prune')
             ?? $this->config->get('http-automock.prune', false);
 
@@ -149,8 +156,9 @@ class HttpAutomockOptions
 
     public function validateMocks(): bool
     {
+        // preventAutoRenew also disables validating, since it is also an action with a real request
         return $this->validateMocks
-            ?? ($this->preventAutoRenew ? false : null)
+            ?? ($this->preventAutoRenew() ? false : null)
             ?? $this->hasCommandOption('validate-mocks')
             ?? $this->config->get('http-automock.validate_mocks', false);
     }

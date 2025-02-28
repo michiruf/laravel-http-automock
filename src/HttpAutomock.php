@@ -269,7 +269,7 @@ class HttpAutomock
         return $this;
     }
 
-    public function preventAutoRenew(bool $prevent = true): static
+    public function preventAutoRenew(?bool $prevent = true): static
     {
         $this->options->preventAutoRenew = $prevent;
 
