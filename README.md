@@ -63,7 +63,6 @@ Features are just a rough idea, whereas TODOs should get implemented at some poi
   * more easy hash resolver (however this is possible)
 * FEATURE: Use Macroable in automock
 * TODO: Possibility to provide a closure to renew, ... and other config functions
-* TODO: Option to disable putting mocks in directories that are test-dependent
 
 ## Troubleshooting
 

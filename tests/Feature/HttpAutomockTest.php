@@ -344,6 +344,17 @@ it('can specify closure filename resolutions', function () {
     expect(File::exists(mockFilePath('GET.mock')))->toBeTrue();
 });
 
+it('can use the shared directory', function () {
+    Http::fake([
+        'https://test' => Http::response(),
+    ]);
+
+    File::deleteDirectory(testDirectory('.pest/automock/Shared'));
+    Http::automock()->shared();
+    Http::get('https://test');
+    expect(File::exists(testDirectory('.pest/automock/Shared/6dd00367.mock')))->toBeTrue('Shared file does not exist');
+});
+
 it('can serialize default headers', function () {
     $mockFilePath = deletePreviousMock('4c147242.mock');
 

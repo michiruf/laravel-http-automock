@@ -142,15 +142,24 @@ class HttpAutomock
     protected function testDirectory(): string
     {
         $testInstance = TestSuite::getInstance();
+        $basePath = str('')
+            ->append($testInstance->rootPath.DIRECTORY_SEPARATOR)
+            ->append($testInstance->testPath.DIRECTORY_SEPARATOR);
+
+        if ($this->options->shared()) {
+            return $basePath
+                ->append($this->options->sharedDirectory())
+                ->append(DIRECTORY_SEPARATOR)
+                ->value();
+        }
+
         $relativePath = str($testInstance->getFilename())
             ->remove($testInstance->rootPath.DIRECTORY_SEPARATOR.$testInstance->testPath)
             ->beforeLast('.')
             ->toString();
         $description = $testInstance->getDescription();
 
-        return str('')
-            ->append($testInstance->rootPath.DIRECTORY_SEPARATOR)
-            ->append($testInstance->testPath.DIRECTORY_SEPARATOR)
+        return $basePath
             ->append($this->options->directory())
             ->append($relativePath.DIRECTORY_SEPARATOR)
             ->append($description.DIRECTORY_SEPARATOR)
@@ -237,6 +246,13 @@ class HttpAutomock
     {
         $this->fileNameResolver->forgetPreviousInstances();
         $this->options->fileNameResolver = ['resolver' => $resolver, ...$args];
+
+        return $this;
+    }
+
+    public function shared(?bool $shared = true): static
+    {
+        $this->options->shared = $shared;
 
         return $this;
     }

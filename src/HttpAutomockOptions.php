@@ -16,6 +16,10 @@ class HttpAutomockOptions
 
     public ?string $directory = null;
 
+    public ?bool $shared = null;
+
+    public ?string $sharedDirectory = null;
+
     public ?string $extension = null;
 
     public string|Closure|array|FileNameResolverInterface|null $fileNameResolver = null;
@@ -95,6 +99,20 @@ class HttpAutomockOptions
         return $this->directory
             ?? $this->commandArg('directory')
             ?? $this->config->get('http-automock.directory', '.pest/automock');
+    }
+
+    public function shared(): string
+    {
+        return $this->shared
+            ?? $this->commandArg('shared')
+            ?? $this->config->get('http-automock.shared', false);
+    }
+
+    public function sharedDirectory(): string
+    {
+        return $this->sharedDirectory
+            ?? $this->commandArg('shared-directory')
+            ?? $this->config->get('http-automock.shared_directory', '.pest/automock/Shared');
     }
 
     public function extension(): string
