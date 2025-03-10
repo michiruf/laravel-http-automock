@@ -48,7 +48,7 @@ Features are just a rough idea, whereas TODOs should get implemented at some poi
 * FEATURE: Mocks that should be reused for all test methods should be definable. Maybe by specifying a scope for specific
   requests?
 * FEATURE: Configure all options like prevent, renew, ... on a requests basis
-* FEATURE: Allow additional persistance of the request (for transparency reasons, not for functionality)
+* FEATURE: Allow additional persistence of the request (for transparency reasons, not for functionality)
 * FEATURE: Pipeline for name resolvers (so that one resolver may change stuff of previous resolvers)
 * TODO: Null return for resolvers
 * TODO: Resolving multiple Resolvers of one type in a stack resolver will only instantiate one
@@ -62,6 +62,7 @@ Features are just a rough idea, whereas TODOs should get implemented at some poi
 * TODO: Think about versioning file name resolvers, because it is crucial if they change inside a project
 * FEATURE: Use Macroable in automock
 * TODO: Possibility to provide a closure to renew, ... and other config functions
+* TODO: Unit tests
 
 ## Troubleshooting
 
