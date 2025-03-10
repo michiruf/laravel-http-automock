@@ -355,6 +355,28 @@ it('can use the shared directory', function () {
     expect(File::exists(testDirectory('.pest/automock/Shared/6dd00367.mock')))->toBeTrue('Shared file does not exist');
 });
 
+it('can prettify directory naming', function () {
+    $directoryPretty = '.pest/automock/Feature/HttpAutomockTest/it_can_prettify_directory_naming_with_data_set';
+    $directoryUgly = '.pest/automock/Feature/HttpAutomockTest/it_can_prettify_directory_naming_with_data_set___Closure_Object_______Closure_Object____';
+    Http::fake([
+        'https://test' => Http::response(),
+    ]);
+
+    File::deleteDirectory(testDirectory($directoryPretty));
+    File::deleteDirectory(testDirectory($directoryUgly));
+    Http::automock()->prettifyDirectoryNaming(false);
+    Http::get('https://test');
+    expect(File::isDirectory(testDirectory($directoryPretty)))->toBeFalse('Prettified directory must not exist')
+        ->and(File::isDirectory(testDirectory($directoryUgly)))->toBeTrue('Ugly directory must exist');
+
+    File::deleteDirectory(testDirectory($directoryPretty));
+    File::deleteDirectory(testDirectory($directoryUgly));
+    Http::automock()->prettifyDirectoryNaming();
+    Http::get('https://test');
+    expect(File::isDirectory(testDirectory($directoryPretty)))->toBeTrue('Prettified directory must exist')
+        ->and(File::isDirectory(testDirectory($directoryUgly)))->toBeFalse('Ugly directory must not exist');
+})->with([[fn () => true]]);
+
 it('can serialize default headers', function () {
     $mockFilePath = deletePreviousMock('4c147242.mock');
 

@@ -52,8 +52,6 @@ Features are just a rough idea, whereas TODOs should get implemented at some poi
 * FEATURE: Pipeline for name resolvers (so that one resolver may change stuff of previous resolvers)
 * TODO: Null return for resolvers
 * TODO: Resolving multiple Resolvers of one type in a stack resolver will only instantiate one
-* TODO: Optionally remove pests closure naming (`__Closure_Object__`) in the test directory path `it_can_foo_with_data_set__dataset__foo____Closure_Object_______`
-* TODO: Optionally remove pests multiple underscores (`___`) in the test directory path
 * TODO: Think about an opt-in approach rather than an opt-out for auto-renew
 * TODO: Think about adding more easy resolvers
   * http method (exists)
@@ -61,6 +59,7 @@ Features are just a rough idea, whereas TODOs should get implemented at some poi
   * http domain/host without subdomain
   * http path
   * more easy hash resolver (however this is possible)
+* TODO: Think about versioning file name resolvers, because it is crucial if they change inside a project
 * FEATURE: Use Macroable in automock
 * TODO: Possibility to provide a closure to renew, ... and other config functions
 

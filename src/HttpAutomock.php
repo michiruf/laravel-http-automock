@@ -159,6 +159,15 @@ class HttpAutomock
             ->toString();
         $description = $testInstance->getDescription();
 
+        if ($this->options->prettifyDirectoryNaming()) {
+            do {
+                $description = str($description)
+                    ->rtrim('_')
+                    ->chopEnd('Closure_Object')
+                    ->value();
+            } while (str($description)->endsWith('_'));
+        }
+
         return $basePath
             ->append($this->options->directory())
             ->append($relativePath.DIRECTORY_SEPARATOR)
@@ -253,6 +262,13 @@ class HttpAutomock
     public function shared(?bool $shared = true): static
     {
         $this->options->shared = $shared;
+
+        return $this;
+    }
+
+    public function prettifyDirectoryNaming(?bool $prettify = true): static
+    {
+        $this->options->prettifyDirectoryNaming = $prettify;
 
         return $this;
     }
