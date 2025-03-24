@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Pest\TestSuite;
 use PHPUnit\Framework\ExpectationFailedException;
+use Workbench\App\Resolver\ExceptionTestResolver;
 
 use function Orchestra\Testbench\package_path;
 use function Pest\testDirectory;
@@ -343,6 +344,39 @@ it('can specify closure filename resolutions', function () {
     Http::get('https://test');
     expect(File::exists(mockFilePath('GET.mock')))->toBeTrue();
 });
+
+it('will fail on exceptions in file name resolution #1', function () {
+    Http::fake([
+        'https://test' => Http::response(),
+    ]);
+
+    Http::automock()->resolveFileNameUsing(new ExceptionTestResolver());
+    Http::get('https://test');
+
+    $this->fail('This should not get executed');
+})->throws(RuntimeException::class, 'Test');
+
+it('will fail on exceptions in file name resolution #2', function () {
+    config()->set('http-automock.filename_resolvers', [
+        'test-stack' => [
+            'resolver' => StackResolver::class,
+            'filenameResolvers' => [
+                '*' => ['test-exception'],
+            ],
+            'delimiter' => '_',
+        ],
+        'test-exception' => ExceptionTestResolver::class,
+    ],);
+
+    Http::fake([
+        'https://test' => Http::response(),
+    ]);
+
+    Http::automock()->resolveFileNameUsing('test-stack');
+    Http::get('https://test');
+
+    $this->fail('This should not get executed');
+})->throws(RuntimeException::class, 'Test');
 
 it('can use the shared directory', function () {
     Http::fake([
