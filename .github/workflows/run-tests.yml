@@ -41,5 +41,8 @@ jobs:
           composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
           composer update --prefer-stable --prefer-dist --no-interaction
 
+      - name: List installed dependencies
+        run: composer show -D
+
       - name: Run Tests
-        run: vendor/bin/pest --exclude-group=long-running,wip,deploy -v --coverage
+        run: vendor/bin/pest -v --coverage
