@@ -2,7 +2,7 @@ name: Run Tests
 on:
   push:
     branches:
-      - ci
+      - main
   workflow_call: # Make this workflow callable from other workflows
   workflow_dispatch: # Make this workflow runnable on github
 
