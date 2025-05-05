@@ -21,6 +21,7 @@ class RequestMixin
     public function query(): callable
     {
         return function (): array {
+            /** @var Request $this */
             return Query::parse($this->toPsrRequest()->getUri()->getQuery());
         };
     }
