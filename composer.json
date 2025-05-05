@@ -14,6 +14,7 @@
         "spatie/laravel-package-tools": "^1.16"
     },
     "require-dev": {
+        "larastan/larastan": "^3.2",
         "laravel/pint": "^1.14",
         "laravel/sail": "^1.31",
         "nunomaduro/collision": "^8.1.1||^7.10.0",
