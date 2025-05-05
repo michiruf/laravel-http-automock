@@ -2,7 +2,7 @@ name: Run Tests
 on:
   push:
     branches:
-      - main
+      - ci
   workflow_call: # Make this workflow callable from other workflows
   workflow_dispatch: # Make this workflow runnable on github
 
@@ -15,7 +15,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Prepare App
-        uses: ./.github/workflows/prepare-app
+        #uses: ./.github/workflows/prepare-app
+        uses: michiruf/laravel-ci/.github/workflows/prepare-app@main
         with:
           coverage: true
 
