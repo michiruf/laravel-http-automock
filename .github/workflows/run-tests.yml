@@ -23,7 +23,7 @@ jobs:
     name: PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Prepare App
         uses: michiruf/laravel-ci/prepare-app@main
