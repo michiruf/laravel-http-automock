@@ -13,10 +13,18 @@ class PreventedRequestException extends RuntimeException
         public bool $preventUnknown,
     ) {
         parent::__construct(
-            $this->preventUnknown
-                ? "Tried to send an unknown real request that was prevented, url: {$request->url()}, mock file: $mockFilePath"
-                : "Tried to send a real request that was prevented, url: {$request->url()}, mock file: $mockFilePath",
+            $this->formatMessage($this->preventUnknown
+                ? "Tried to send an unknown real request that was prevented."
+                : "Tried to send a real request that was prevented."),
             $this->preventUnknown ? 2 : 1
         );
+    }
+
+    protected function formatMessage(string $error): string
+    {
+        return str($error)
+            ->append("\n  URL: {$this->request->url()}")
+            ->append("\n  Mock file: {$this->mockFilePath}")
+            ->value();
     }
 }
