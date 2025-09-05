@@ -9,11 +9,6 @@ use Illuminate\Http\Client\Request;
 
 class PendingRequest extends LaravelPendingRequest
 {
-    public function __construct(?Factory $factory = null, $middleware = [])
-    {
-        parent::__construct($factory, $middleware);
-    }
-
     public function pushHandlers($handlerStack)
     {
         // We want to register this event handler after laravels stub handler,
