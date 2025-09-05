@@ -222,6 +222,14 @@ it('can prevent real requests', function () {
     Http::get('http://localhost:9337/coffee/hot');
 })->throws(PreventedRequestException::class, 'Tried to send a real request that was prevented', 1);
 
+it('can prevent real requests when all events are faked', function () {
+    deletePreviousMock();
+
+    Event::fake();
+    Http::automock()->preventRealRequests();
+    Http::get('http://localhost:9337/coffee/hot');
+})->throws(PreventedRequestException::class);
+
 it('can prevent real requests when a mock file exists and renew is on', function () {
     $mockFilePath = deletePreviousMock('4c147242.mock');
     File::ensureDirectoryExists(dirname($mockFilePath));

@@ -4,6 +4,8 @@ namespace HttpAutomock;
 
 use HttpAutomock\Support\HttpAutomockMixin;
 use HttpAutomock\Support\RequestMixin;
+use Illuminate\Contracts\Container\Container;
+use Illuminate\Events\Dispatcher;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
@@ -27,5 +29,12 @@ class HttpAutomockServiceProvider extends PackageServiceProvider
 
         Http::mixin(new HttpAutomockMixin);
         Request::mixin(new RequestMixin);
+    }
+
+    public static function getIndependentDispatcher(): Dispatcher
+    {
+        app()->singletonIf('automock.dispatcher', fn (Container $container) => new Dispatcher($container));
+
+        return app('automock.dispatcher');
     }
 }

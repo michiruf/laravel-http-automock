@@ -8,6 +8,7 @@ use HttpAutomock\Exceptions\PreventedRequestException;
 use HttpAutomock\Resolver\FileNameResolverInterface;
 use HttpAutomock\Serialization\MessageSerializerFactory;
 use HttpAutomock\Service\HttpAutomockFileNameResolver;
+use Illuminate\Events\Dispatcher;
 use Illuminate\Http\Client\Events\ResponseReceived;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\Request;
@@ -23,6 +24,8 @@ use SplFileInfo;
 
 class HttpAutomock
 {
+    protected Dispatcher $dispatcher;
+
     protected bool $registered = false;
 
     protected array $prunedFiles = [];
@@ -31,7 +34,9 @@ class HttpAutomock
         protected HttpAutomockOptions $options,
         protected HttpAutomockFileNameResolver $fileNameResolver,
         protected MessageSerializerFactory $messageSerializerFactory,
-    ) {}
+    ) {
+        $this->dispatcher = HttpAutomockServiceProvider::getIndependentDispatcher();
+    }
 
     public function enable(): static
     {
@@ -80,7 +85,7 @@ class HttpAutomock
 
     protected function registerPreventRequestsHandler(): void
     {
-        Event::listen(RealRequestSendingEvent::class, function (RealRequestSendingEvent $event) {
+        $this->dispatcher->listen(function (RealRequestSendingEvent $event) {
             if (! $this->options->enabled() || $this->requestFiltered($event->request)) {
                 return;
             }
@@ -105,7 +110,7 @@ class HttpAutomock
 
     protected function registerResponseHandler(): void
     {
-        Event::listen(function (ResponseReceived $event) {
+        $this->dispatcher->listen(function (ResponseReceived $event) {
             if (! $this->options->enabled() || $this->requestFiltered($event->request)) {
                 return;
             }
