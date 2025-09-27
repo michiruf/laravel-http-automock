@@ -27,7 +27,7 @@ class PendingRequest extends LaravelPendingRequest
                 // Construct the request like it is done int the stub handler
                 $laravelRequest = (new Request($request))->withData($options['laravel_data']);
 
-                HttpAutomockServiceProvider::getIndependentDispatcher()->dispatch(new RealRequestSendingEvent($laravelRequest));
+                HttpAutomockServiceProvider::automockDispatcher()->dispatch(new RealRequestSendingEvent($laravelRequest));
 
                 return $handler($request, $options);
             };
@@ -39,6 +39,6 @@ class PendingRequest extends LaravelPendingRequest
         parent::dispatchResponseReceivedEvent($response);
 
         // Dispatch the event on the independent dispatcher for automock too
-        HttpAutomockServiceProvider::getIndependentDispatcher()->dispatch(new ResponseReceived($this->request, $response));
+        HttpAutomockServiceProvider::automockDispatcher()->dispatch(new ResponseReceived($this->request, $response));
     }
 }

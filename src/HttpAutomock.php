@@ -8,7 +8,7 @@ use HttpAutomock\Exceptions\PreventedRequestException;
 use HttpAutomock\Resolver\FileNameResolverInterface;
 use HttpAutomock\Serialization\MessageSerializerFactory;
 use HttpAutomock\Service\HttpAutomockFileNameResolver;
-use Illuminate\Events\Dispatcher;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Http\Client\Events\ResponseReceived;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\Request;
@@ -35,7 +35,7 @@ class HttpAutomock
         protected HttpAutomockFileNameResolver $fileNameResolver,
         protected MessageSerializerFactory $messageSerializerFactory,
     ) {
-        $this->dispatcher = HttpAutomockServiceProvider::getIndependentDispatcher();
+        $this->dispatcher = HttpAutomockServiceProvider::automockDispatcher();
     }
 
     public function enable(): static
