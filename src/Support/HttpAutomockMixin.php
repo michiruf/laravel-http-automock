@@ -39,4 +39,15 @@ class HttpAutomockMixin
             return HttpAutomockFacade::getFacadeRoot();
         };
     }
+
+    /** @noinspection PhpUnused */
+    public function automockEnabled(): callable
+    {
+        /**
+         * Return whether automock is enabled.
+         */
+        return function (): bool {
+            return HttpAutomockFacade::enabled();
+        };
+    }
 }

@@ -54,6 +54,11 @@ class HttpAutomock
         return $this;
     }
 
+    public function enabled(): bool
+    {
+        return $this->options->enabled();
+    }
+
     protected function registerMockHandler(): void
     {
         Http::fake(function (Request $request) {
