@@ -14,6 +14,32 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Shared mocks
+    |--------------------------------------------------------------------------
+    |
+    | When 'shared' is enabled, mocks will be stored in a shared directory
+    | that can be used across multiple tests.
+    |
+    | 'shared_directory' configures the directory where shared mocks are
+    | stored.
+    |
+    */
+    'shared' => false,
+    'shared_directory' => '.pest/automock/Shared',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Prettify directory naming
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, the directory names for mocks will be prettified to be
+    | more human-readable.
+    |
+    */
+    'prettify_directory_naming' => false,
+
+    /*
+    |--------------------------------------------------------------------------
     | Mock extension
     |--------------------------------------------------------------------------
     |
@@ -76,6 +102,68 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Prevent real requests
+    |--------------------------------------------------------------------------
+    |
+    | When 'prevent_real_requests' is enabled, all real HTTP requests will be
+    | prevented and an exception will be thrown instead.
+    |
+    | When 'prevent_unknown_real_requests' is enabled, only requests that do
+    | not have an existing mock will be prevented.
+    |
+    */
+    'prevent_real_requests' => false,
+    'prevent_unknown_real_requests' => false,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Renew mocks
+    |--------------------------------------------------------------------------
+    |
+    | When 'renew' is enabled, existing mocks will be renewed by making real
+    | HTTP requests again.
+    |
+    | When 'prevent_auto_renew' is enabled, automatic renewing of mocks is
+    | prevented. This also prevents pruning and validation.
+    |
+    */
+    'renew' => false,
+    'prevent_auto_renew' => false,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Prune mocks
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, mocks that are no longer used will be pruned (deleted).
+    |
+    */
+    'prune' => false,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validate mocks
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, existing mocks will be validated against real HTTP
+    | responses to ensure they are still up to date.
+    |
+    */
+    'validate_mocks' => false,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mock HTTP fakes
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, HTTP fakes (responses registered via Http::fake()) will
+    | also be mocked by automock.
+    |
+    */
+    'mock_http_fakes' => false,
+
+    /*
+    |--------------------------------------------------------------------------
     | Serialize headers & default header list
     |--------------------------------------------------------------------------
     |
@@ -102,5 +190,20 @@ return [
     |
     */
     'json_pretty_print' => true,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Request filters
+    |--------------------------------------------------------------------------
+    |
+    | 'url_filters' is a list of URL patterns. Only requests matching these
+    | patterns will be automocked. An empty array means all URLs are included.
+    |
+    | 'filters' is a list of closures that receive a Request and return a
+    | boolean. Only requests passing all filters will be automocked.
+    |
+    */
+    'url_filters' => [],
+    'filters' => [],
 
 ];
