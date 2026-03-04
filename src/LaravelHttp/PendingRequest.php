@@ -3,9 +3,11 @@
 namespace HttpAutomock\LaravelHttp;
 
 use HttpAutomock\Event\RealRequestSendingEvent;
-use Illuminate\Http\Client\Factory;
+use HttpAutomock\HttpAutomockServiceProvider;
+use Illuminate\Http\Client\Events\ResponseReceived;
 use Illuminate\Http\Client\PendingRequest as LaravelPendingRequest;
 use Illuminate\Http\Client\Request;
+use Illuminate\Http\Client\Response;
 
 class PendingRequest extends LaravelPendingRequest
 {
@@ -25,10 +27,18 @@ class PendingRequest extends LaravelPendingRequest
                 // Construct the request like it is done int the stub handler
                 $laravelRequest = (new Request($request))->withData($options['laravel_data']);
 
-                event(new RealRequestSendingEvent($laravelRequest));
+                HttpAutomockServiceProvider::automockDispatcher()->dispatch(new RealRequestSendingEvent($laravelRequest));
 
                 return $handler($request, $options);
             };
         };
+    }
+
+    protected function dispatchResponseReceivedEvent(Response $response): void
+    {
+        parent::dispatchResponseReceivedEvent($response);
+
+        // Dispatch the event on the independent dispatcher for automock too
+        HttpAutomockServiceProvider::automockDispatcher()->dispatch(new ResponseReceived($this->request, $response));
     }
 }
