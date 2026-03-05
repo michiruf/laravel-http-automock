@@ -550,18 +550,34 @@ it('can skip all except get requests', function () {
     expect(File::isDirectory($mockDirectory))->toBeTrue();
 });
 
-todo('can skip get requests', function () {
-    // TODO
+it('can skip get requests', function () {
+    $mockDirectory = deletePreviousMock();
+
+    Http::automock()->skipGet();
+    Http::get('http://localhost:9337/coffee/hot');
+    expect(File::isDirectory($mockDirectory))->toBeFalse();
 });
 
-todo('can skip post requests', function () {
-    // TODO
+it('can skip post requests', function () {
+    $mockDirectory = deletePreviousMock();
+
+    Http::automock()->skipPost();
+    Http::post('http://localhost:9337/coffee/hot');
+    expect(File::isDirectory($mockDirectory))->toBeFalse();
 });
 
-todo('can skip put requests', function () {
-    // TODO
+it('can skip put requests', function () {
+    $mockDirectory = deletePreviousMock();
+
+    Http::automock()->skipPut();
+    Http::put('http://localhost:9337/coffee/hot');
+    expect(File::isDirectory($mockDirectory))->toBeFalse();
 });
 
-todo('can skip delete requests', function () {
-    // TODO
+it('can skip delete requests', function () {
+    $mockDirectory = deletePreviousMock();
+
+    Http::automock()->skipDelete();
+    Http::delete('http://localhost:9337/coffee/hot');
+    expect(File::isDirectory($mockDirectory))->toBeFalse();
 });
