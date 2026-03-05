@@ -2,33 +2,31 @@
 
 [![Run Tests](https://github.com/michiruf/laravel-http-automock/actions/workflows/run-tests.yml/badge.svg)](https://github.com/michiruf/laravel-http-automock/actions/workflows/run-tests.yml)
 
-Laravel package for tests to automatically mock HTTP requests using laravels
-[HTTP client](https://laravel.com/docs/11.x/http-client) and [Pest](https://pestphp.com/).
+Automatically record and replay HTTP responses in your Laravel tests. On the first test run, real HTTP requests are
+made and the responses are saved to disk. On subsequent runs, the saved responses are used instead — no real requests
+are made. This makes your tests faster, deterministic, and independent of external services.
 
-## Prerequisites
+Requires PHP 8.2+, Laravel 10–12, and [Pest](https://pestphp.com/).
+Works only with Laravel's [HTTP client](https://laravel.com/docs/http-client).
 
-This package currently only works using [Pest](https://pestphp.com/) and laravels
-[HTTP client](https://laravel.com/docs/11.x/http-client).
+## Quick Start
 
-## Installation
+### Installation
 
 ```shell
 composer require michiruf/laravel-http-automock --dev
 ```
 
-Publish the config:
+Optionally publish the config:
 
 ```shell
 php artisan vendor:publish --tag="http-automock-config"
 ```
 
-## Usage
+### Usage
 
-To enable automock, call `Http::automock();` inside your tests before executing the requests you want to send to
-save responses automatically and use them in the next tests runs.
-
-For further examples, please refer to [this test](./tests/Feature/ExampleUsageTest.php) or detailed sections of this
-document.
+Call `Http::automock()` inside your test before executing HTTP requests. Responses will be automatically saved on
+the first run and replayed on subsequent runs.
 
 ```php
 it('can do stuff with the api', function () {
@@ -38,25 +36,55 @@ it('can do stuff with the api', function () {
 });
 ```
 
-### General configuration options
+For more examples, see the [example test](./tests/Feature/ExampleUsageTest.php).
+
+### How It Works
+
+1. You call `Http::automock()` in a test — this registers the recording/replaying handlers
+2. When an HTTP request is made:
+    - If a mock file exists for that request, the saved response is returned (no real request)
+    - If no mock file exists, the real request is made and the response is saved to disk
+3. Mock files are stored per-test in a directory structure like:
+   ```
+   tests/.pest/automock/TestScope/ExampleTest/it_can_do_stuff_with_the_api/1_GET_4c147242.mock
+   ```
+
+## Motivation
+
+When testing applications that depend on external APIs, you often end up manually capturing response data to feed
+into `Http::fake()`. This is tedious, especially when services return large or complex payloads. Running real
+requests in tests ensures your application actually works against live data, but the execution time is high — and
+maintaining both faked and real test setups creates significant overhead.
+
+Laravel Http Automock removes that burden. On the first run, your tests hit the real APIs and responses are saved
+automatically. Every subsequent run replays those responses instantly. You get the confidence of real data without
+the cost of real requests.
+
+Since mock files live in your repository, git naturally picks up changes in external API responses which makes it easy
+to notice when a service changed its behavior while keeping a safe copy of the data.
+
+## Configuration
 
 Each feature can be configured via three methods (in order of precedence):
 
-1. **Fluent API** - `Http::automock()->someFeature()` or `Http::configureAutomock()->someFeature()`
-2. **CLI** - `./vendor/bin/pest --automock-option`
-3. **Config** - `config/http-automock.php` if you have published the configuration
+1. **Fluent API** — `Http::automock()->someFeature()` or `Http::configureAutomock()->someFeature()`
+2. **CLI** — `./vendor/bin/pest --automock-option`
+3. **Config** — `config/http-automock.php` (if published)
 
-Note that calling `Http::automock()` will also enable automock for this test.
+> [!NOTE]
+> `Http::automock()` both enables automock and returns the instance for fluent configuration.
+> `Http::configureAutomock()` returns the instance without enabling automock — useful for setting options separately.
 
 ### Enable / Disable
 
-Temporarily disable automock without removing the call.
+Automock is not active by default. It must be explicitly enabled per-test by calling `Http::automock()`.
+To temporarily disable automock within a test without removing the call, use `disable()`:
 
-| Method | Usage                                         |
-|--------|-----------------------------------------------|
-| Fluent | `Http::automock()->disable()` or `->enable()` |
-| CLI    | `--automock-enabled`                          |
-| Config | `'enabled' => true`                           |
+| Method | Usage                                              |
+|--------|----------------------------------------------------|
+| Fluent | `Http::automock()->disable()` or `->enable()`      |
+| Fluent | `Http::noAutomock()` (equivalent to `->disable()`) |
+| CLI    | `--automock-enabled`                               |
 
 ### File Storage
 
@@ -88,7 +116,7 @@ Store mocks in a shared location for all tests instead of per-test directories.
 
 **Prettify Directory Naming**
 
-Clean up test directory names by removing closure suffixes.
+Clean up test directory names by removing closure suffixes (e.g. `_Closure_Object`).
 
 | Method | Usage                                         |
 |--------|-----------------------------------------------|
@@ -165,7 +193,9 @@ Force re-fetching responses even when mocks already exist.
 
 **Prevent Auto Renew**
 
-Disable renewing, pruning, and validation (useful for CI).
+When enabled, `preventAutoRenew()` **overrides** and disables renewing, pruning, and validation — regardless of
+their individual settings. This is useful for CI environments where you want to ensure that no real requests are
+made, while still being able to pass `--automock-renew` during local development without conflicts.
 
 | Method | Usage                                  |
 |--------|----------------------------------------|
@@ -197,11 +227,10 @@ Ensure tests don't accidentally make real HTTP calls.
 
 Throws `PreventedRequestException` for any real request.
 
-> [!NOTE]  
+> [!NOTE]
 > It is highly recommended not to set this as a default on a project level. When working with APIs that do have a
-> reproducible behavior, it might be the right choice for a specific test case, but when by setting this as a project
-> default, automock will lack some useful features.
-> automock will lack features to renew requests.
+> reproducible behavior, it might be the right choice for a specific test case, but when setting this as a project
+> default, automock will lack features to renew requests.
 > Consider using `preventUnknownRealRequests` instead whenever possible.
 
 **Prevent only unknown requests:**
@@ -212,17 +241,17 @@ Throws `PreventedRequestException` for any real request.
 | CLI    | `--automock-prevent-unknown-real-requests`       |
 | Config | `'prevent_unknown_real_requests' => false`       |
 
-> [!NOTE]  
-> It is highly recommended not to set this as a default on a project level. When working with APIs that do have a
-> reproducible behavior, it might be the right choice for a specific test case, but when by setting this as a project
-> default, automock will lack some useful features.
-
 Throws `PreventedRequestException` only for requests without an existing mock. Useful with `renew()` to refresh existing
 mocks while preventing new ones:
 
 ```php
 Http::automock()->preventUnknownRealRequests()->renew();
 ```
+
+> [!NOTE]
+> It is highly recommended not to set this as a default on a project level. When working with APIs that do have a
+> reproducible behavior, it might be the right choice for a specific test case, but when setting this as a project
+> default, automock will lack some useful features.
 
 ### Skipping Requests
 
@@ -293,15 +322,17 @@ Pretty print JSON responses in mock files.
 | CLI    | `--automock-json-pretty-print`        |
 | Config | `'json_pretty_print' => true`         |
 
-## Develpopment: Features & TODOs
+## Development: Features & TODOs
 
 In this list, features and TODOs can get noted that come up during usage, development and feedback.
 Features are just a rough idea, whereas TODOs should get implemented at some point.
 
-* FEATURE: Skip or retry specific responses, e.g. when a 429 error or rate limits occur. Maybe by using one of these approaches:
-  * New `retryRequestsUntil` method
-  * New `renewUntil` - Repeat renewing until the response contains sth.
-* FEATURE: Mocks that should be reused for all test methods should be definable. Maybe by specifying a scope for specific
+* FEATURE: Skip or retry specific responses, e.g. when a 429 error or rate limits occur. Maybe by using one of these
+  approaches:
+    * New `retryRequestsUntil` method
+    * New `renewUntil` - Repeat renewing until the response contains sth.
+* FEATURE: Mocks that should be reused for all test methods should be definable. Maybe by specifying a scope for
+  specific
   requests?
 * FEATURE: Configure all options like prevent, renew, ... on a requests basis
 * FEATURE: Allow additional persistence of the request (for transparency reasons, not for functionality)
@@ -310,11 +341,11 @@ Features are just a rough idea, whereas TODOs should get implemented at some poi
 * TODO: Resolving multiple Resolvers of one type in a stack resolver will only instantiate one
 * TODO: Think about an opt-in approach rather than an opt-out for auto-renew
 * TODO: Think about adding more easy resolvers
-  * http method (exists)
-  * http domain/host
-  * http domain/host without subdomain
-  * http path
-  * more easy hash resolver (however this is possible)
+    * http method (exists)
+    * http domain/host
+    * http domain/host without subdomain
+    * http path
+    * more easy hash resolver (however this is possible)
 * TODO: Think about versioning file name resolvers, because it is crucial if they change inside a project
 * FEATURE: Use Macroable in automock
 * TODO: Possibility to provide a closure to renew, ... and other config functions
