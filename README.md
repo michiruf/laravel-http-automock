@@ -150,7 +150,8 @@ Available resolvers in config: `stack`, `count`, `http_method`, `url_hash`, `url
 
 ### Headers
 
-Control which response headers are persisted in mock files. Default: none.
+By default, only response bodies are saved to mock files. If your application logic depends on specific response
+headers (e.g. `Content-Type`, `X-RateLimit-Remaining`), you can opt in to persisting them.
 
 ```php
 Http::automock()->withHeaders(['Server']);     // Specific headers
@@ -193,7 +194,8 @@ Http::automock()->preventUnknownRealRequests()->renew();
 
 ### Skipping Requests
 
-Skip automocking for specific requests.
+Exclude certain requests from being recorded or replayed. Skipped requests pass through to their normal behavior
+(real HTTP call or Laravel's `Http::fake()`).
 
 **Skip by URL pattern:**
 
@@ -226,15 +228,20 @@ Http::automock()->stopSkip('alias'); // Clear specific
 
 ### Validation
 
-Assert that responses match existing mock files.
+When enabled, automock compares responses from real HTTP requests against the existing mock files and fails the test
+if they differ. This is useful for detecting when an external API has changed its response format or data, without
+permanently switching to live requests.
 
 ### Mock HTTP Fakes
 
-Also save responses from Laravel's `Http::fake()`.
+By default, automock only records responses from real HTTP requests and ignores responses produced by Laravel's
+`Http::fake()`. When this option is enabled, faked responses are also saved to mock files. This can be useful when
+you want a consistent mock file structure for all requests, regardless of whether they hit a real endpoint or a fake.
 
 ### JSON Pretty Print
 
-Pretty print JSON responses in mock files.
+When enabled (on by default), JSON response bodies are formatted with indentation in mock files. This makes diffs
+more readable in version control and makes it easier to inspect saved responses manually.
 
 ## Troubleshooting
 
