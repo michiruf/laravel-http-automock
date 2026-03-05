@@ -213,13 +213,17 @@ Http::automock()->withHeaders();               // All headers
 
 ### Renewing / Pruning
 
-Force re-fetching responses even when mocks already exist.
+**Renew** forces automock to re-fetch responses from the real API even when mock files already exist. The new
+responses overwrite the existing mock files. This is useful when you know an external API has changed, and you want
+to update your saved mocks to reflect the current behavior.
+
+**Pruning** deletes all existing mock files for the executed test before running it. Only mock files belonging to
+that specific test are removed, not mocks from other tests. This ensures you start with a clean slate, removing any
+leftover mocks from requests that are no longer made by the test.
 
 **Prevent Auto Renew** overrides and disables renewing, pruning, and validation, regardless of their individual
 settings. This is useful for CI environments where you want to ensure that no real requests are made, while still
 being able to pass `--automock-renew` during local development without conflicts.
-
-**Pruning** deletes old mock files before running the test.
 
 > [!TIP]
 > It would be possible to set up a CI pipeline, that renews and commits requests periodically. You may want to consider
