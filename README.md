@@ -3,7 +3,7 @@
 [![Run Tests](https://github.com/michiruf/laravel-http-automock/actions/workflows/run-tests.yml/badge.svg)](https://github.com/michiruf/laravel-http-automock/actions/workflows/run-tests.yml)
 
 Automatically record and replay HTTP responses in your Laravel tests. On the first test run, real HTTP requests are
-made and the responses are saved to disk. On subsequent runs, the saved responses are used instead — no real requests
+made and the responses are saved to disk. On subsequent runs, the saved responses are used instead, no real requests
 are made. This makes your tests faster, deterministic, and independent of external services.
 
 Requires PHP 8.2+, Laravel 10+, and [Pest](https://pestphp.com/).
@@ -36,11 +36,11 @@ it('can do stuff with the api', function () {
 });
 ```
 
-For more examples, see the [example test](./tests/Feature/ExampleUsageTest.php).
+For more test examples, see the [example test](./tests/Feature/ExampleUsageTest.php).
 
 ### How It Works
 
-1. You call `Http::automock()` in a test — this registers the recording/replaying handlers
+1. You call `Http::automock()` in a test, this registers the recording/replaying handlers
 2. When an HTTP request is made:
     - If a mock file exists for that request, the saved response is returned (no real request)
     - If no mock file exists, the real request is made and the response is saved to disk
@@ -53,7 +53,7 @@ For more examples, see the [example test](./tests/Feature/ExampleUsageTest.php).
 
 When testing applications that depend on external APIs, you often end up manually capturing response data to feed
 into `Http::fake()`. This is tedious, especially when services return large or complex payloads. Running real
-requests in tests ensures your application actually works against live data, but the execution time is high — and
+requests in tests ensures your application actually works against live data, but the execution time is high, and
 maintaining both faked and real test setups creates significant overhead.
 
 Laravel Http Automock removes that burden. On the first run, your tests hit the real APIs and responses are saved
@@ -67,13 +67,13 @@ to notice when a service changed its behavior while keeping a safe copy of the d
 
 Each feature can be configured via three methods (in order of precedence):
 
-1. **Fluent API** — `Http::automock()->someFeature()` or `Http::configureAutomock()->someFeature()`
-2. **CLI** — `./vendor/bin/pest --automock-option`
-3. **Config** — `config/http-automock.php` (if published)
+1. **Fluent API**: `Http::automock()->someFeature()` or `Http::configureAutomock()->someFeature()`
+2. **CLI**: `./vendor/bin/pest --automock-option`
+3. **Config**: `config/http-automock.php` (if published)
 
 > [!NOTE]
 > `Http::automock()` both enables automock and returns the instance for fluent configuration.
-> `Http::configureAutomock()` returns the instance without enabling automock — useful for setting options separately.
+> `Http::configureAutomock()` returns the instance without enabling automock, useful for setting options separately.
 
 ### Reference
 
@@ -106,7 +106,7 @@ To temporarily disable automock within a test without removing the call, use `di
 
 ### File Storage
 
-Configure where and how mock files are stored — directory, extension, shared location, and directory name formatting.
+Configure where and how mock files are stored: directory, extension, shared location, and directory name formatting.
 
 **Shared Directory** stores mocks in a shared location for all tests instead of per-test directories.
 
@@ -114,7 +114,14 @@ Configure where and how mock files are stored — directory, extension, shared l
 
 ### File Name Resolvers
 
-Customize how mock filenames are generated. Default: `1_GET_4c147242.mock`
+Each mock file needs a unique filename so that requests can be matched to their saved responses. File name resolvers
+control how these filenames are generated from the request properties (URL, method, body, etc.). The default `stack`
+resolver produces filenames like `1_GET_4c147242.mock` by combining a request counter, HTTP method, and URL hash.
+
+You can switch to a different resolver, combine multiple resolvers, or provide your own logic entirely - either via
+a named resolver from the config, a closure, or a resolver class instance.
+
+Available resolvers: `stack`, `count`, `http_method`, `url_hash`, `url_subdirectory`, `data_hash`
 
 **Using a named resolver:**
 
@@ -146,7 +153,53 @@ Http::automock()->resolveFileNameUsingResolverAndArgs(
 );
 ```
 
-Available resolvers in config: `stack`, `count`, `http_method`, `url_hash`, `url_subdirectory`, `data_hash`
+**Configuring the stack resolver:**
+
+The default `stack` resolver combines multiple resolvers into a single filename, joined by a delimiter. You can
+configure which resolvers are used and even apply different stacks based on URL patterns. In `config/http-automock.php`:
+
+```php
+'default_filename_resolver' => 'stack',
+'filename_resolvers' => [
+
+    'stack' => [
+        'resolver' => \HttpAutomock\Resolver\StackResolver::class,
+        'filenameResolvers' => [
+            // '*' matches all URLs, use specific patterns to customize per host
+            '*' => ['count', 'http_method', 'url_hash'],
+        ],
+        'delimiter' => '_',
+    ],
+
+    // Individual resolvers referenced above
+    'count'            => \HttpAutomock\Resolver\CountResolver::class,
+    'http_method'      => \HttpAutomock\Resolver\RequestMethodResolver::class,
+    'url_hash'         => [
+        'resolver' => \HttpAutomock\Resolver\RequestUrlResolver::class,
+        'hashMethod' => 'xxh32',
+    ],
+    'url_subdirectory' => [
+        'resolver' => \HttpAutomock\Resolver\RequestUrlResolver::class,
+    ],
+    'data_hash'        => [
+        'resolver' => \HttpAutomock\Resolver\RequestResolver::class,
+        'hashMethod' => 'xxh32',
+    ],
+
+],
+```
+
+With the default stack config above, a filename like `1_GET_4c147242.mock` is produced by joining
+`count` (1), `http_method` (GET), and `url_hash` (4c147242) with `_`.
+
+You can customize the stack per URL pattern. The first matching pattern wins:
+
+```php
+'filenameResolvers' => [
+    '*api.example.com*' => ['http_method', 'url_subdirectory'],
+    '*'                 => ['count', 'http_method', 'url_hash'],
+],
+```
 
 ### Headers
 
@@ -162,35 +215,40 @@ Http::automock()->withHeaders();               // All headers
 
 Force re-fetching responses even when mocks already exist.
 
-**Prevent Auto Renew** overrides and disables renewing, pruning, and validation — regardless of their individual
+**Prevent Auto Renew** overrides and disables renewing, pruning, and validation, regardless of their individual
 settings. This is useful for CI environments where you want to ensure that no real requests are made, while still
 being able to pass `--automock-renew` during local development without conflicts.
 
 **Pruning** deletes old mock files before running the test.
 
+> [!TIP]
+> It would be possible to set up a CI pipeline, that renews and commits requests periodically. You may want to consider
+> also adding some sort of request prevention.
+
 ### Preventing Requests
 
-Ensure tests don't accidentally make real HTTP calls.
+By default, when no mock file exists for a request, automock makes a real HTTP call and records the response. In some
+scenarios, especially CI pipelines or destructive operations, you want to guarantee that no real requests are ever
+made. Automock provides two levels of protection:
 
-**Prevent all real requests** throws `PreventedRequestException` for any real request.
-
-> [!NOTE]
-> It is highly recommended not to set this as a default on a project level. When working with APIs that do have a
-> reproducible behavior, it might be the right choice for a specific test case, but when setting this as a project
-> default, automock will lack features to renew requests.
-> Consider using `preventUnknownRealRequests` instead whenever possible.
-
-**Prevent only unknown requests** throws `PreventedRequestException` only for requests without an existing mock.
-Useful with `renew()` to refresh existing mocks while preventing new ones:
-
-```php
-Http::automock()->preventUnknownRealRequests()->renew();
-```
+**Prevent all real requests** blocks every outgoing HTTP request and throws `PreventedRequestException`. No real
+requests are made, even if mock files are missing. This is the strictest mode.
 
 > [!NOTE]
-> It is highly recommended not to set this as a default on a project level. When working with APIs that do have a
-> reproducible behavior, it might be the right choice for a specific test case, but when setting this as a project
-> default, automock will lack some useful features.
+> Avoid setting this as a project-wide default. It prevents automock from recording new mocks or renewing existing
+> ones. Consider using `preventUnknownRealRequests` or no prevention whenever possible.
+
+**Prevent only unknown requests** is a more flexible alternative. It throws `PreventedRequestException` only for
+requests that don't already have a mock file on disk. Requests with existing mocks still work, including when
+combined with `renew()` to re-fetch and update them:
+
+> [!NOTE]
+> Like `preventRealRequests`, avoid setting this as a project-wide default, it limits automock's ability to record
+> new requests.
+
+> [!TIP]
+> It is highly recommended to enable one of these options in your CI pipeline to ensure tests never make real HTTP
+> calls unexpectedly.
 
 ### Skipping Requests
 
