@@ -306,23 +306,11 @@ more readable in version control and makes it easier to inspect saved responses 
 ### Windows git long paths
 
 It might be recommended / essential to use git long paths when generating long file names.
-To do so, execute
+To do so, execute one of the first 2 commands, then review with the 3rd.
 
 ```shell
 git config --global core.longpaths true
-```
-
-if you want to enable long paths in general or
-
-```shell
 git config core.longpaths true
-```
-
-to enable long paths in the project.
-
-Validate the setting via
-
-```shell
 git config --list --show-origin
 ```
 
