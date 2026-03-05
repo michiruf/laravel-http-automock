@@ -6,7 +6,7 @@ Automatically record and replay HTTP responses in your Laravel tests. On the fir
 made and the responses are saved to disk. On subsequent runs, the saved responses are used instead — no real requests
 are made. This makes your tests faster, deterministic, and independent of external services.
 
-Requires PHP 8.2+, Laravel 10–12, and [Pest](https://pestphp.com/).
+Requires PHP 8.2+, Laravel 10+, and [Pest](https://pestphp.com/).
 Works only with Laravel's [HTTP client](https://laravel.com/docs/http-client).
 
 ## Quick Start
@@ -75,64 +75,46 @@ Each feature can be configured via three methods (in order of precedence):
 > `Http::automock()` both enables automock and returns the instance for fluent configuration.
 > `Http::configureAutomock()` returns the instance without enabling automock — useful for setting options separately.
 
+### Reference
+
+| Feature                  | Fluent API                                | CLI Flag                                   | Default                   |
+|--------------------------|-------------------------------------------|--------------------------------------------|---------------------------|
+| Enable                   | `Http::automock()`                        | `--automock-enabled`                       | off                       |
+| Disable                  | `...->disable()` / `Http::noAutomock()`   | —                                          | —                         |
+| Directory                | —                                         | `--automock-directory=...`                 | `'.pest/automock'`        |
+| Extension                | —                                         | `--automock-extension=...`                 | `'.mock'`                 |
+| Shared                   | `...->shared()`                           | `--automock-shared`                        | `false`                   |
+| Shared directory         | —                                         | `--automock-shared-directory=...`          | `'.pest/automock/Shared'` |
+| Prettify dir naming      | `...->prettifyDirectoryNaming()`          | `--automock-prettify-directory-naming`     | `false`                   |
+| File name resolver       | `...->resolveFileNameUsing(...)`          | `--automock-file-name-resolver=...`        | `'stack'`                 |
+| Headers                  | `...->withHeaders(...)`                   | `--automock-headers=...`                   | off / `[]`                |
+| Renew                    | `...->renew()`                            | `--automock-renew`                         | `false`                   |
+| Prevent auto renew       | `...->preventAutoRenew()`                 | `--automock-prevent-auto-renew`            | `false`                   |
+| Prune                    | `...->prune()`                            | `--automock-prune`                         | `false`                   |
+| Prevent real requests    | `...->preventRealRequests()`              | `--automock-prevent-real-requests`         | `false`                   |
+| Prevent unknown requests | `...->preventUnknownRealRequests()`       | `--automock-prevent-unknown-real-requests` | `false`                   |
+| Skip (URL pattern)       | `...->skip('pattern', 'alias')`           | `--automock-url-filters=...`               | `[]`                      |
+| Skip GET/POST/...        | `...->skipGet()`, `...->skipPost()`, etc. | —                                          | —                         |
+| Validate mocks           | `...->validateMocks()`                    | `--automock-validate-mocks`                | `false`                   |
+| Mock HTTP fakes          | `...->mockHttpFakes()`                    | `--automock-mock-http-fakes`               | `false`                   |
+| JSON pretty print        | `...->jsonPrettyPrint()`                  | `--automock-json-pretty-print`             | `true`                    |
+
 ### Enable / Disable
 
 Automock is not active by default. It must be explicitly enabled per-test by calling `Http::automock()`.
-To temporarily disable automock within a test without removing the call, use `disable()`:
-
-| Method | Usage                                              |
-|--------|----------------------------------------------------|
-| Fluent | `Http::automock()->disable()` or `->enable()`      |
-| Fluent | `Http::noAutomock()` (equivalent to `->disable()`) |
-| CLI    | `--automock-enabled`                               |
+To temporarily disable automock within a test without removing the call, use `disable()` or `Http::noAutomock()`.
 
 ### File Storage
 
-Configure where and how mock files are stored.
+Configure where and how mock files are stored — directory, extension, shared location, and directory name formatting.
 
-**Directory**
+**Shared Directory** stores mocks in a shared location for all tests instead of per-test directories.
 
-| Method | Usage                                 |
-|--------|---------------------------------------|
-| CLI    | `--automock-directory=.pest/automock` |
-| Config | `'directory' => '.pest/automock'`     |
-
-**Extension**
-
-| Method | Usage                        |
-|--------|------------------------------|
-| CLI    | `--automock-extension=.json` |
-| Config | `'extension' => '.mock'`     |
-
-**Shared Directory**
-
-Store mocks in a shared location for all tests instead of per-test directories.
-
-| Method | Usage                                                                |
-|--------|----------------------------------------------------------------------|
-| Fluent | `Http::automock()->shared()`                                         |
-| CLI    | `--automock-shared`, `--automock-shared-directory=...`               |
-| Config | `'shared' => false`, `'shared_directory' => '.pest/automock/Shared'` |
-
-**Prettify Directory Naming**
-
-Clean up test directory names by removing closure suffixes (e.g. `_Closure_Object`).
-
-| Method | Usage                                         |
-|--------|-----------------------------------------------|
-| Fluent | `Http::automock()->prettifyDirectoryNaming()` |
-| CLI    | `--automock-prettify-directory-naming`        |
-| Config | `'prettify_directory_naming' => false`        |
+**Prettify Directory Naming** cleans up test directory names by removing closure suffixes (e.g. `_Closure_Object`).
 
 ### File Name Resolvers
 
 Customize how mock filenames are generated. Default: `1_GET_4c147242.mock`
-
-| Method | Usage                                            |
-|--------|--------------------------------------------------|
-| Fluent | `Http::automock()->resolveFileNameUsing(...)`    |
-| CLI    | `--automock-file-name-resolver=url_subdirectory` |
-| Config | `'default_filename_resolver' => 'stack'`         |
 
 **Using a named resolver:**
 
@@ -170,12 +152,6 @@ Available resolvers in config: `stack`, `count`, `http_method`, `url_hash`, `url
 
 Control which response headers are persisted in mock files. Default: none.
 
-| Method | Usage                                                              |
-|--------|--------------------------------------------------------------------|
-| Fluent | `Http::automock()->withHeaders()`                                  |
-| CLI    | `--automock-headers=Content-Type,Server`                           |
-| Config | `'use_default_headers' => false`, `'default_header_list' => [...]` |
-
 ```php
 Http::automock()->withHeaders(['Server']);     // Specific headers
 Http::automock()->withHeaders();               // All headers
@@ -185,47 +161,17 @@ Http::automock()->withHeaders();               // All headers
 
 Force re-fetching responses even when mocks already exist.
 
-| Method | Usage                       |
-|--------|-----------------------------|
-| Fluent | `Http::automock()->renew()` |
-| CLI    | `--automock-renew`          |
-| Config | `'renew' => false`          |
+**Prevent Auto Renew** overrides and disables renewing, pruning, and validation — regardless of their individual
+settings. This is useful for CI environments where you want to ensure that no real requests are made, while still
+being able to pass `--automock-renew` during local development without conflicts.
 
-**Prevent Auto Renew**
-
-When enabled, `preventAutoRenew()` **overrides** and disables renewing, pruning, and validation — regardless of
-their individual settings. This is useful for CI environments where you want to ensure that no real requests are
-made, while still being able to pass `--automock-renew` during local development without conflicts.
-
-| Method | Usage                                  |
-|--------|----------------------------------------|
-| Fluent | `Http::automock()->preventAutoRenew()` |
-| CLI    | `--automock-prevent-auto-renew`        |
-| Config | `'prevent_auto_renew' => false`        |
-
-**Pruning**
-
-Delete old mock files before running the test.
-
-| Method | Usage                       |
-|--------|-----------------------------|
-| Fluent | `Http::automock()->prune()` |
-| CLI    | `--automock-prune`          |
-| Config | `'prune' => false`          |
+**Pruning** deletes old mock files before running the test.
 
 ### Preventing Requests
 
 Ensure tests don't accidentally make real HTTP calls.
 
-**Prevent all real requests:**
-
-| Method | Usage                                     |
-|--------|-------------------------------------------|
-| Fluent | `Http::automock()->preventRealRequests()` |
-| CLI    | `--automock-prevent-real-requests`        |
-| Config | `'prevent_real_requests' => false`        |
-
-Throws `PreventedRequestException` for any real request.
+**Prevent all real requests** throws `PreventedRequestException` for any real request.
 
 > [!NOTE]
 > It is highly recommended not to set this as a default on a project level. When working with APIs that do have a
@@ -233,16 +179,8 @@ Throws `PreventedRequestException` for any real request.
 > default, automock will lack features to renew requests.
 > Consider using `preventUnknownRealRequests` instead whenever possible.
 
-**Prevent only unknown requests:**
-
-| Method | Usage                                            |
-|--------|--------------------------------------------------|
-| Fluent | `Http::automock()->preventUnknownRealRequests()` |
-| CLI    | `--automock-prevent-unknown-real-requests`       |
-| Config | `'prevent_unknown_real_requests' => false`       |
-
-Throws `PreventedRequestException` only for requests without an existing mock. Useful with `renew()` to refresh existing
-mocks while preventing new ones:
+**Prevent only unknown requests** throws `PreventedRequestException` only for requests without an existing mock.
+Useful with `renew()` to refresh existing mocks while preventing new ones:
 
 ```php
 Http::automock()->preventUnknownRealRequests()->renew();
@@ -256,12 +194,6 @@ Http::automock()->preventUnknownRealRequests()->renew();
 ### Skipping Requests
 
 Skip automocking for specific requests.
-
-| Method | Usage                                    |
-|--------|------------------------------------------|
-| Fluent | `Http::automock()->skip(...)`            |
-| CLI    | `--automock-url-filters=*example.com*`   |
-| Config | `'url_filters' => []`, `'filters' => []` |
 
 **Skip by URL pattern:**
 
@@ -296,31 +228,13 @@ Http::automock()->stopSkip('alias'); // Clear specific
 
 Assert that responses match existing mock files.
 
-| Method | Usage                               |
-|--------|-------------------------------------|
-| Fluent | `Http::automock()->validateMocks()` |
-| CLI    | `--automock-validate-mocks`         |
-| Config | `'validate_mocks' => false`         |
-
 ### Mock HTTP Fakes
 
 Also save responses from Laravel's `Http::fake()`.
 
-| Method | Usage                               |
-|--------|-------------------------------------|
-| Fluent | `Http::automock()->mockHttpFakes()` |
-| CLI    | `--automock-mock-http-fakes`        |
-| Config | `'mock_http_fakes' => false`        |
-
 ### JSON Pretty Print
 
 Pretty print JSON responses in mock files.
-
-| Method | Usage                                 |
-|--------|---------------------------------------|
-| Fluent | `Http::automock()->jsonPrettyPrint()` |
-| CLI    | `--automock-json-pretty-print`        |
-| Config | `'json_pretty_print' => true`         |
 
 ## Troubleshooting
 
