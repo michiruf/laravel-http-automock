@@ -6,7 +6,7 @@ Automatically record and replay HTTP responses in your Laravel tests. On the fir
 made and the responses are saved to disk. On subsequent runs, the saved responses are used instead, no real requests
 are made. This makes your tests faster, deterministic, and independent of external services.
 
-Requires PHP 8.2+, Laravel 10+, and [Pest](https://pestphp.com/).
+Requires PHP 8.2+, Laravel 11+, and [Pest](https://pestphp.com/).
 Works only with Laravel's [HTTP client](https://laravel.com/docs/http-client).
 
 ## Quick Start
