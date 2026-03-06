@@ -4,7 +4,8 @@
 
 Automatically record and replay HTTP responses in your Laravel tests. On the first test run, real HTTP requests are
 made and the responses are saved to disk. On subsequent runs, the saved responses are used instead, no real requests
-are made. This makes your tests faster, deterministic, and independent of external services.
+are made. This makes your tests faster, deterministic, and independent of external services. Automock is fully
+compatible with `Http::fake()`.
 
 Requires PHP 8.2+, Laravel 11+, and [Pest](https://pestphp.com/).
 Works only with Laravel's [HTTP client](https://laravel.com/docs/http-client).
@@ -40,7 +41,7 @@ For more test examples, see the [example test](./tests/Feature/ExampleUsageTest.
 
 ### How It Works
 
-1. You call `Http::automock()` in a test, this registers the recording/replaying handlers
+1. You call `Http::automock()` in a test, which registers the recording/replaying handlers
 2. When an HTTP request is made:
     - If a mock file exists for that request, the saved response is returned (no real request)
     - If no mock file exists, the real request is made and the response is saved to disk
@@ -226,8 +227,8 @@ settings. This is useful for CI environments where you want to ensure that no re
 being able to pass `--automock-renew` during local development without conflicts.
 
 > [!TIP]
-> It would be possible to set up a CI pipeline, that renews and commits requests periodically. You may want to consider
-> also adding some sort of request prevention.
+> It would be possible to set up a CI pipeline, that renews and commits responses periodically. Consider using some sort
+> of request prevention on tests where it is crucial to deny.
 
 ### Preventing Requests
 
@@ -244,7 +245,7 @@ requests are made, even if mock files are missing. This is the strictest mode.
 
 **Prevent only unknown requests** is a more flexible alternative. It throws `PreventedRequestException` only for
 requests that don't already have a mock file on disk. Requests with existing mocks still work, including when
-combined with `renew()` to re-fetch and update them:
+combined with `renew()` or `prune()` to re-fetch and update them.
 
 > [!NOTE]
 > Like `preventRealRequests`, avoid setting this as a project-wide default, it limits automock's ability to record
@@ -293,7 +294,7 @@ Http::automock()->stopSkip('alias'); // Clear specific
 When enabled, automock makes real HTTP requests even when mock files already exist. Instead of replaying the saved
 response, it compares the live response against the existing mock file and fails the test if they differ. The mock
 files themselves are not updated. This is useful for detecting when an external API has changed its response format
-or data, without permanently overwriting your saved mocks.
+or data, without permanently overwriting your saved mocks. Can be prevented explicitly by enabling prevent auto-renew.
 
 ### Mock HTTP Fakes
 
