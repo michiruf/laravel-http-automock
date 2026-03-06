@@ -300,7 +300,7 @@ or data, without permanently overwriting your saved mocks. Can be prevented expl
 
 By default, automock only records responses from real HTTP requests and ignores responses produced by Laravel's
 `Http::fake()`. When this option is enabled, faked responses are also saved to mock files. This can be useful when
-you want a consistent mock file structure for all requests, regardless of whether they hit a real endpoint or a fake.
+you want to extract inline fakes into mock files.
 
 ### JSON Pretty Print
 
