@@ -290,9 +290,10 @@ Http::automock()->stopSkip('alias'); // Clear specific
 
 ### Validation
 
-When enabled, automock compares responses from real HTTP requests against the existing mock files and fails the test
-if they differ. This is useful for detecting when an external API has changed its response format or data, without
-permanently switching to live requests.
+When enabled, automock makes real HTTP requests even when mock files already exist. Instead of replaying the saved
+response, it compares the live response against the existing mock file and fails the test if they differ. The mock
+files themselves are not updated. This is useful for detecting when an external API has changed its response format
+or data, without permanently overwriting your saved mocks.
 
 ### Mock HTTP Fakes
 
