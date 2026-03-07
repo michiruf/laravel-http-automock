@@ -1,6 +1,8 @@
 # Laravel Http Automock
 
 [![Run Tests](https://github.com/michiruf/laravel-http-automock/actions/workflows/run-tests.yml/badge.svg)](https://github.com/michiruf/laravel-http-automock/actions/workflows/run-tests.yml)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/michiruf/laravel-http-automock.svg)](https://packagist.org/packages/michiruf/laravel-http-automock)
+[![Total Downloads](https://img.shields.io/packagist/dt/michiruf/laravel-http-automock.svg)](https://packagist.org/packages/michiruf/laravel-http-automock)
 
 Automatically record and replay HTTP responses in your Laravel tests. On the first test run, real HTTP requests are
 made and the responses are saved to disk. On subsequent runs, the saved responses are used instead, no real requests
