@@ -63,7 +63,7 @@ Laravel Http Automock removes that burden. On the first run, your tests hit the 
 automatically. Every subsequent run replays those responses instantly. You get the confidence of real data without
 the cost of real requests.
 
-Since mock files live in your repository, git naturally picks up changes in external API responses which makes it easy
+Since mock files live in your repository, Git naturally picks up changes in external API responses which makes it easy
 to notice when a service changed its behavior while keeping a safe copy of the data.
 
 ## Configuration
@@ -75,12 +75,12 @@ Each feature can be configured via three methods (in order of precedence):
 3. **Config**: `config/http-automock.php` (if published)
 
 > [!NOTE]
-> `Http::automock()` both enables automock and returns the instance for fluent configuration.
-> `Http::configureAutomock()` returns the instance without enabling automock, useful for setting options separately.
+> `Http::automock()` both enables Automock and returns the instance for fluent configuration.
+> `Http::configureAutomock()` returns the instance without enabling Automock, useful for setting options separately.
 
 ### Reference
 
-In addition to the publishable config `http-automock.php`, you can use these methods to configure automock:
+In addition to the publishable config `http-automock.php`, you can use these methods to configure Automock:
 
 | Feature                  | Fluent API                                | CLI Flag                                   | Default                   |
 |--------------------------|-------------------------------------------|--------------------------------------------|---------------------------|
@@ -107,7 +107,7 @@ In addition to the publishable config `http-automock.php`, you can use these met
 ### Enable / Disable
 
 Automock is not active by default. It must be explicitly enabled per-test by calling `Http::automock()`. To disable
-automock afterward, use `disable()` or `Http::noAutomock()`.
+Automock afterward, use `disable()` or `Http::noAutomock()`.
 
 ### File Name Resolvers
 
@@ -210,7 +210,7 @@ Http::automock()->shared();
 ```
 
 **Prettify Directory Naming** cleans up test directory names by removing closure suffixes (e.g. `_Closure_Object`) from
-Pests directory naming:
+Pest's directory naming:
 
 ```php
 Http::automock()->prettifyDirectoryNaming();
@@ -228,7 +228,7 @@ Http::automock()->withHeaders();               // All headers
 
 ### Renewing / Pruning
 
-**Renew** forces automock to re-fetch responses from the real API even when mock files already exist. The new
+**Renew** forces Automock to re-fetch responses from the real API even when mock files already exist. The new
 responses overwrite the existing mock files. This is useful when you know an external API has changed, and you want
 to update your saved mocks to reflect the current behavior.
 
@@ -258,7 +258,7 @@ Http::automock()->preventAutoRenew();
 
 ### Preventing Requests
 
-By default, when no mock file exists for a request, automock makes a real HTTP call and records the response. In some
+By default, when no mock file exists for a request, Automock makes a real HTTP call and records the response. In some
 scenarios, especially CI pipelines or destructive operations, you want to guarantee that no real requests are ever
 made. Automock provides two levels of protection:
 
@@ -270,7 +270,7 @@ Http::automock()->preventRealRequests();
 ```
 
 > [!NOTE]
-> Avoid setting this as a project-wide default. It prevents automock from recording new mocks or renewing existing
+> Avoid setting this as a project-wide default. It prevents Automock from recording new mocks or renewing existing
 > ones. Consider using `preventUnknownRealRequests` or no prevention whenever possible.
 
 **Prevent only unknown requests** is a more flexible alternative. It throws `PreventedRequestException` only for
@@ -282,7 +282,7 @@ Http::automock()->preventUnknownRealRequests();
 ```
 
 > [!NOTE]
-> Like `preventRealRequests`, avoid setting this as a project-wide default, it limits automock's ability to record
+> Like `preventRealRequests`, avoid setting this as a project-wide default, it limits Automock's ability to record
 > new requests.
 
 > [!TIP]
@@ -325,7 +325,7 @@ Http::automock()->stopSkip('alias'); // Clear specific
 
 ### Validation
 
-When enabled, automock makes real HTTP requests even when mock files already exist. Instead of replaying the saved
+When enabled, Automock makes real HTTP requests even when mock files already exist. Instead of replaying the saved
 response, it compares the live response against the existing mock file and fails the test if they differ. The mock
 files themselves are not updated. This is useful for detecting when an external API has changed its response format
 or data, without permanently overwriting your saved mocks. Can be prevented explicitly by enabling prevent auto-renew.
@@ -336,7 +336,7 @@ Http::automock()->validateMocks();
 
 ### Mock HTTP Fakes
 
-By default, automock only records responses from real HTTP requests and ignores responses produced by Laravel's
+By default, Automock only records responses from real HTTP requests and ignores responses produced by Laravel's
 `Http::fake()`. When this option is enabled, faked responses are also saved to mock files. This can be useful when
 you want to extract inline fakes into mock files.
 
@@ -355,9 +355,9 @@ Http::automock()->jsonPrettyPrint();
 
 ## Troubleshooting
 
-### Windows git long paths
+### Windows Git long paths
 
-It might be recommended / essential to use git long paths when generating long file names.
+It might be recommended / essential to use Git long paths when generating long file names.
 To do so, execute one of the first 2 commands, then review with the 3rd.
 
 ```shell
