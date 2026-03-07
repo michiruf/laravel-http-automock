@@ -106,8 +106,8 @@ In addition to the publishable config `http-automock.php`, you can use these met
 
 ### Enable / Disable
 
-Automock is not active by default. It must be explicitly enabled per-test by calling `Http::automock()`.
-To temporarily disable automock within a test without removing the call, use `disable()` or `Http::noAutomock()`.
+Automock is not active by default. It must be explicitly enabled per-test by calling `Http::automock()`. To disable
+automock afterward, use `disable()` or `Http::noAutomock()`.
 
 ### File Name Resolvers
 
@@ -232,13 +232,25 @@ Http::automock()->withHeaders();               // All headers
 responses overwrite the existing mock files. This is useful when you know an external API has changed, and you want
 to update your saved mocks to reflect the current behavior.
 
+```php
+Http::automock()->renew();
+```
+
 **Pruning** deletes all existing mock files for the executed test before running it. Only mock files belonging to
 that specific test are removed, not mocks from other tests. This ensures you start with a clean slate, removing any
 leftover mocks from requests that are no longer made by the test.
 
+```php
+Http::automock()->prune();
+```
+
 **Prevent Auto Renew** overrides and disables renewing, pruning, and validation, regardless of their individual
 settings. This is useful for CI environments where you want to ensure that no real requests are made, while still
 being able to pass `--automock-renew` during local development without conflicts.
+
+```php
+Http::automock()->preventAutoRenew();
+```
 
 > [!TIP]
 > It would be possible to set up a CI pipeline, that renews and commits responses periodically. Consider using some sort
@@ -253,6 +265,10 @@ made. Automock provides two levels of protection:
 **Prevent all real requests** blocks every outgoing HTTP request and throws `PreventedRequestException`. No real
 requests are made, even if mock files are missing. This is the strictest mode.
 
+```php
+Http::automock()->preventRealRequests();
+```
+
 > [!NOTE]
 > Avoid setting this as a project-wide default. It prevents automock from recording new mocks or renewing existing
 > ones. Consider using `preventUnknownRealRequests` or no prevention whenever possible.
@@ -260,6 +276,10 @@ requests are made, even if mock files are missing. This is the strictest mode.
 **Prevent only unknown requests** is a more flexible alternative. It throws `PreventedRequestException` only for
 requests that don't already have a mock file on disk. Requests with existing mocks still work, including when
 combined with `renew()` or `prune()` to re-fetch and update them.
+
+```php
+Http::automock()->preventUnknownRealRequests();
+```
 
 > [!NOTE]
 > Like `preventRealRequests`, avoid setting this as a project-wide default, it limits automock's ability to record
@@ -310,16 +330,28 @@ response, it compares the live response against the existing mock file and fails
 files themselves are not updated. This is useful for detecting when an external API has changed its response format
 or data, without permanently overwriting your saved mocks. Can be prevented explicitly by enabling prevent auto-renew.
 
+```php
+Http::automock()->validateMocks();
+```
+
 ### Mock HTTP Fakes
 
 By default, automock only records responses from real HTTP requests and ignores responses produced by Laravel's
 `Http::fake()`. When this option is enabled, faked responses are also saved to mock files. This can be useful when
 you want to extract inline fakes into mock files.
 
+```php
+Http::automock()->mockHttpFakes();
+```
+
 ### JSON Pretty Print
 
 When enabled (on by default), JSON response bodies are formatted with indentation in mock files. This makes diffs
 more readable in version control and makes it easier to inspect saved responses manually.
+
+```php
+Http::automock()->jsonPrettyPrint();
+```
 
 ## Troubleshooting
 
