@@ -61,7 +61,8 @@ maintaining both faked and real test setups creates significant overhead.
 
 Laravel Http Automock removes that burden. On the first run, your tests hit the real APIs and responses are saved
 automatically. Every subsequent run replays those responses instantly. You get the confidence of real data without
-the cost of real requests.
+the cost of real requests. The concept is similar to snapshot testing, except that instead of persisting the test
+output, Automock persists the input.
 
 Since mock files live in your repository, Git naturally picks up changes in external API responses which makes it easy
 to notice when a service changed its behavior while keeping a safe copy of the data.
