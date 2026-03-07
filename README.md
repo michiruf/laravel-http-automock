@@ -78,6 +78,8 @@ Each feature can be configured via three methods (in order of precedence):
 
 ### Reference
 
+In addition to the publishable config `http-automock.php`, you can use these methods to configure automock:
+
 | Feature                  | Fluent API                                | CLI Flag                                   | Default                   |
 |--------------------------|-------------------------------------------|--------------------------------------------|---------------------------|
 | Enable                   | `Http::automock()`                        | `--automock-enabled`                       | off                       |
@@ -104,14 +106,6 @@ Each feature can be configured via three methods (in order of precedence):
 
 Automock is not active by default. It must be explicitly enabled per-test by calling `Http::automock()`.
 To temporarily disable automock within a test without removing the call, use `disable()` or `Http::noAutomock()`.
-
-### File Storage
-
-Configure where and how mock files are stored: directory, extension, shared location, and directory name formatting.
-
-**Shared Directory** stores mocks in a shared location for all tests instead of per-test directories.
-
-**Prettify Directory Naming** cleans up test directory names by removing closure suffixes (e.g. `_Closure_Object`).
 
 ### File Name Resolvers
 
@@ -200,6 +194,24 @@ You can customize the stack per URL pattern. The first matching pattern wins:
     '*api.example.com*' => ['http_method', 'url_subdirectory'],
     '*'                 => ['count', 'http_method', 'url_hash'],
 ],
+```
+
+### File Storage
+
+Configure where and how mock files are stored. **Directory** and **Extension** control the base path and file extension
+for mock files. These can be configured via CLI flags or in the published config file.
+
+**Shared Directory** stores mocks in a shared location for all tests instead of per-test directories:
+
+```php
+Http::automock()->shared();
+```
+
+**Prettify Directory Naming** cleans up test directory names by removing closure suffixes (e.g. `_Closure_Object`) from
+Pests directory naming:
+
+```php
+Http::automock()->prettifyDirectoryNaming();
 ```
 
 ### Headers
