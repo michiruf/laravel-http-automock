@@ -4,6 +4,10 @@ All notable changes to `laravel-http-automock` will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2] - 2026-03-04
+
+_Stable release of all 0.2 release candidates._
+
 ## [0.2-rc7] - 2026-03-04
 
 ### Added
