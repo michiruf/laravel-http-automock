@@ -399,24 +399,28 @@ it('can use the shared directory', function () {
 
 it('can prettify directory naming', function () {
     $directoryPretty = '.pest/automock/Feature/HttpAutomockTest/it_can_prettify_directory_naming_with_data_set';
-    $directoryUgly = '.pest/automock/Feature/HttpAutomockTest/it_can_prettify_directory_naming_with_data_set___Closure_Object_______Closure_Object____';
+    $directoryNonPrettyPestV3 = '.pest/automock/Feature/HttpAutomockTest/it_can_prettify_directory_naming_with_data_set___Closure_Object_______Closure_Object____';
+    $directoryNonPrettyPestV4 = '.pest/automock/Feature/HttpAutomockTest/it_can_prettify_directory_naming_with_data_set___Closure_Object_____';
+    $isUglyDirectory = fn () => File::isDirectory(testDirectory($directoryNonPrettyPestV3)) || File::isDirectory(testDirectory($directoryNonPrettyPestV4));
     Http::fake([
         'https://test' => Http::response(),
     ]);
 
     File::deleteDirectory(testDirectory($directoryPretty));
-    File::deleteDirectory(testDirectory($directoryUgly));
+    File::deleteDirectory(testDirectory($directoryNonPrettyPestV3));
+    File::deleteDirectory(testDirectory($directoryNonPrettyPestV4));
     Http::automock()->prettifyDirectoryNaming(false);
     Http::get('https://test');
     expect(File::isDirectory(testDirectory($directoryPretty)))->toBeFalse('Prettified directory must not exist')
-        ->and(File::isDirectory(testDirectory($directoryUgly)))->toBeTrue('Non prettified directory must exist');
+        ->and($isUglyDirectory())->toBeTrue('Non prettified directory must exist');
 
     File::deleteDirectory(testDirectory($directoryPretty));
-    File::deleteDirectory(testDirectory($directoryUgly));
+    File::deleteDirectory(testDirectory($directoryNonPrettyPestV3));
+    File::deleteDirectory(testDirectory($directoryNonPrettyPestV4));
     Http::automock()->prettifyDirectoryNaming();
     Http::get('https://test');
     expect(File::isDirectory(testDirectory($directoryPretty)))->toBeTrue('Prettified directory must exist')
-        ->and(File::isDirectory(testDirectory($directoryUgly)))->toBeFalse('Non prettified directory must not exist');
+        ->and($isUglyDirectory())->toBeFalse('Non prettified directory must not exist');
 })->with([[fn () => true]]);
 
 it('can serialize default headers', function () {
