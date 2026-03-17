@@ -4,6 +4,11 @@ All notable changes to `laravel-http-automock` will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.3] - 2026-03-17
+
+### Added
+- Laravel 13 support
+
 ## [0.2] - 2026-03-04
 
 _Stable release of all 0.2 release candidates._
