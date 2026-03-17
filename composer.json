@@ -18,9 +18,9 @@
         "laravel/pint": "^1.14",
         "laravel/sail": "^1.31",
         "nunomaduro/collision": "^8.1.1||^7.10.0",
-        "orchestra/testbench": "^10.4.0",
-        "pestphp/pest": "^3.0",
-        "pestphp/pest-plugin-laravel": "^3.0",
+        "orchestra/testbench": "^10.4.0||^11.0",
+        "pestphp/pest": "^3.0||^4.0",
+        "pestphp/pest-plugin-laravel": "^3.0||^4.0",
         "slim/slim": "^4.14",
         "spatie/laravel-ray": "^1.35"
     },
