@@ -409,14 +409,14 @@ it('can prettify directory naming', function () {
     Http::automock()->prettifyDirectoryNaming(false);
     Http::get('https://test');
     expect(File::isDirectory(testDirectory($directoryPretty)))->toBeFalse('Prettified directory must not exist')
-        ->and(File::isDirectory(testDirectory($directoryUgly)))->toBeTrue('Ugly directory must exist');
+        ->and(File::isDirectory(testDirectory($directoryUgly)))->toBeTrue('Non prettified directory must exist');
 
     File::deleteDirectory(testDirectory($directoryPretty));
     File::deleteDirectory(testDirectory($directoryUgly));
     Http::automock()->prettifyDirectoryNaming();
     Http::get('https://test');
     expect(File::isDirectory(testDirectory($directoryPretty)))->toBeTrue('Prettified directory must exist')
-        ->and(File::isDirectory(testDirectory($directoryUgly)))->toBeFalse('Ugly directory must not exist');
+        ->and(File::isDirectory(testDirectory($directoryUgly)))->toBeFalse('Non prettified directory must not exist');
 })->with([[fn () => true]]);
 
 it('can serialize default headers', function () {
