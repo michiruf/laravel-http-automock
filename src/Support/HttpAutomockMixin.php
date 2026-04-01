@@ -2,9 +2,15 @@
 
 namespace HttpAutomock\Support;
 
+use Closure;
 use HttpAutomock\Facades\HttpAutomock as HttpAutomockFacade;
 use HttpAutomock\HttpAutomock;
+use Illuminate\Http\Client\Factory;
+use Illuminate\Support\Collection;
 
+/**
+ * @mixin Factory
+ */
 class HttpAutomockMixin
 {
     /** @noinspection PhpUnused */
@@ -49,5 +55,18 @@ class HttpAutomockMixin
         return function (): bool {
             return HttpAutomockFacade::enabled();
         };
+    }
+
+    /**
+     * @noinspection PhpUnused
+     */
+    public function getStubCallbacks(): callable
+    {
+        $stubCallbacksGetter = Closure::bind(fn (Factory $factory) => $factory->stubCallbacks, null, Factory::class);
+
+        /**
+         * Return the stub callbacks collection.
+         */
+        return fn (): Collection => $stubCallbacksGetter($this);
     }
 }

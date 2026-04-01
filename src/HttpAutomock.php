@@ -2,19 +2,19 @@
 
 namespace HttpAutomock;
 
+use Closure;
 use GuzzleHttp\Promise\Create;
-use HttpAutomock\Event\RealRequestSendingEvent;
 use HttpAutomock\Exceptions\PreventedRequestException;
 use HttpAutomock\Resolver\FileNameResolverInterface;
 use HttpAutomock\Serialization\MessageSerializerFactory;
 use HttpAutomock\Service\HttpAutomockFileNameResolver;
 use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Http\Client\Events\RequestSending;
 use Illuminate\Http\Client\Events\ResponseReceived;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\Request;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -30,12 +30,14 @@ class HttpAutomock
 
     protected array $prunedFiles = [];
 
+    protected ?Closure $automockStubWrapper = null;
+
     public function __construct(
         protected HttpAutomockOptions $options,
         protected HttpAutomockFileNameResolver $fileNameResolver,
         protected MessageSerializerFactory $messageSerializerFactory,
     ) {
-        $this->dispatcher = HttpAutomockServiceProvider::automockDispatcher();
+        $this->dispatcher = Http::getFacadeRoot()->getDispatcher();
     }
 
     public function enable(): static
@@ -44,7 +46,7 @@ class HttpAutomock
 
         if (! $this->registered) {
             $this->registerMockHandler();
-            $this->registerPreventRequestsHandler();
+            $this->registerRequestSendingHandler();
             $this->registerResponseHandler();
             $this->registered = true;
         }
@@ -66,7 +68,7 @@ class HttpAutomock
 
     protected function registerMockHandler(): void
     {
-        Http::fake(function (Request $request) {
+        $this->automockStubWrapper = function (Request $request) {
             if (! $this->options->enabled() || $this->requestFiltered($request)) {
                 return null;
             }
@@ -85,24 +87,29 @@ class HttpAutomock
             }
 
             return null;
-        });
+        };
+
+        Http::fake($this->automockStubWrapper);
     }
 
-    protected function registerPreventRequestsHandler(): void
+    protected function registerRequestSendingHandler(): void
     {
-        $this->dispatcher->listen(function (RealRequestSendingEvent $event) {
+        $this->dispatcher->listen(RequestSending::class, function (RequestSending $event) {
             if (! $this->options->enabled() || $this->requestFiltered($event->request)) {
                 return;
             }
 
-            // Cancel early to avoid unnecessary resolving the file path
             if (! $this->options->preventRealRequests() && ! $this->options->preventUnknownRealRequests()) {
                 return;
             }
 
             $filePath = $this->resolveMockPath($event->request, false);
 
-            if ($this->options->preventRealRequests() && ! $this->canMockRequestForFile($filePath)) {
+            if ($this->canMockRequestForFile($filePath) || $this->requestIsFakedByOtherStubs($event->request)) {
+                return;
+            }
+
+            if ($this->options->preventRealRequests()) {
                 throw new PreventedRequestException($event->request, $filePath, false);
             }
 
@@ -135,6 +142,18 @@ class HttpAutomock
                 File::put($filePath, $this->serializeResponse($event->response));
             }
         });
+    }
+
+    protected function requestIsFakedByOtherStubs(Request $request): bool
+    {
+        $data = [
+            'laravel_data' => $request->data(),
+            'on_stats' => function () {},
+        ];
+
+        return Http::getStubCallbacks()
+            ->reject(fn (callable $callback) => $callback === $this->automockStubWrapper)
+            ->contains(fn (callable $callback) => $callback($request, $data) !== null);
     }
 
     protected function resolveMockPath(Request $request, bool $forWriting): string
